@@ -1,28 +1,37 @@
-# OS generated files (Ubuntu/Linux standard & others)
+# User-uploaded content — keep the directory, ignore its contents
+uploads/*
+!uploads/.gitkeep
+
+# Local environment overrides
+.env
+.env.*
+config/database.local.php
+
+# PHP / Composer (not used yet, but harmless to pre-empt)
+/vendor/
+composer.phar
+*.log
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
 *~
-.directory
+
+# OS cruft
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
 Thumbs.db
+ehthumbs.db
+desktop.ini
 
-# IDEs and Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-*.sublime-workspace
-*.sublime-project
-
-# Log files
-*.log
-error_log
-access_log
-
-# Environment variables (Highly recommended if you move DB credentials to an .env file later)
-.env
-.env.local
-.env.*.local
+# Database dumps and backups (database.sql is the tracked schema, keep it)
+*.sql.gz
+*.bak
+*.tmp

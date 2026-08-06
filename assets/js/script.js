@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (toggle && mobileNav) {
         toggle.addEventListener('click', function () {
-            mobileNav.classList.toggle('open');
+            var isOpen = mobileNav.classList.toggle('open');
+            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         });
     }
 });

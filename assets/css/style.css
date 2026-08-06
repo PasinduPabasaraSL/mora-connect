@@ -131,12 +131,20 @@ p { margin: 0 0 var(--space-sm); }
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
 }
+
 .site-header .container {
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -145,13 +153,12 @@ p { margin: 0 0 var(--space-sm); }
   font-weight: 700;
   font-size: var(--fs-headline-sm);
 }
+
 .brand img { height: 32px; width: auto; }
 
-.main-nav { display: flex; align-items: center; gap: var(--space-md); }
+.main-nav { display: flex; align-items: center; gap: var(--space-sm); }
 .main-nav a { color: var(--color-text-muted); transition: color 0.15s; }
-.main-nav a:hover, .main-nav a.active {
-  color: var(--color-text);
-}
+.main-nav a:hover, .main-nav a.active { color: var(--color-text); }
 .main-nav a.active {
   font-weight: 600;
   text-decoration: underline;
@@ -421,3 +428,61 @@ textarea.form-control { min-height: 300px; resize: vertical; font-family: var(--
 @media (min-width: 769px) {
   .mobile-nav { display: none !important; }
 }
+
+/* ---------- 14. MVC layout additions ---------- */
+.page-main {
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-lg);
+}
+
+.section-heading {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-unit);
+  margin-bottom: var(--space-md);
+}
+
+/* Log Out is a POST form so it carries a CSRF token; keep it inline
+   alongside the nav links rather than breaking onto its own line. */
+.inline-form { display: inline; margin: 0; }
+.mobile-nav form { margin: 0; }
+.mobile-nav form .btn { width: 100%; }
+
+.btn-block { width: 100%; }
+
+.article-byline { margin-bottom: var(--space-md); }
+
+/* pre-wrap keeps the author's paragraph breaks without needing nl2br,
+   which would double every line break. */
+.article-body {
+  white-space: pre-wrap;
+  font-size: var(--fs-body-lg);
+  line-height: 1.7;
+  color: var(--color-text);
+}
+
+.owner-actions {
+  margin-top: var(--space-lg);
+  display: flex;
+  gap: var(--space-unit);
+  align-items: center;
+}
+.owner-actions form { margin: 0; }
+
+.profile-posts { display: flex; flex-direction: column; gap: var(--space-sm); }
+.profile-post {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-sm);
+}
+.profile-post h3 { margin: var(--space-unit) 0; }
+.profile-post .btn { flex-shrink: 0; }
+
+.field-hint { margin: 6px 0 0; }
+
+.error-page { text-align: center; padding: var(--space-lg) 0; }
+.error-page h1 { font-size: 72px; margin-bottom: var(--space-unit); }
