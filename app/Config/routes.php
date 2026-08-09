@@ -8,6 +8,7 @@ return static function (Router $router): void {
     $router->get('/', 'HomeController@index');
     $router->get('/about', 'PageController@about');
     $router->get('/search', 'SearchController@index');
+    $router->get('/radar', 'RadarController@index');
 
     // Auth
     $router->get('/login', 'AuthController@showLogin');

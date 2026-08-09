@@ -10,7 +10,41 @@ document.addEventListener('DOMContentLoaded', function () {
     setupThemeToggle();
     setupDropdowns();
     setupHeaderSearch();
+    setupBrokenCovers();
 });
+
+/**
+ * Cover images can point at other sites, and those links rot. When one fails to
+ * load, the card falls back to the same coloured topic block used by articles
+ * that never had an image, instead of showing an empty grey rectangle.
+ */
+function setupBrokenCovers() {
+    document.querySelectorAll('.cover img').forEach(function (img) {
+        img.addEventListener('error', function () {
+            showCoverFallback(img);
+        });
+
+        // An image that already failed before this ran fires no further events
+        if (img.complete && img.naturalWidth === 0) {
+            showCoverFallback(img);
+        }
+    });
+}
+
+function showCoverFallback(img) {
+    var cover = img.parentElement;
+
+    if (!cover || cover.classList.contains('cover-fallback')) {
+        return;
+    }
+
+    var label = document.createElement('span');
+
+    label.textContent = cover.dataset.topic || '';
+    cover.classList.add('cover-fallback');
+    cover.appendChild(label);
+    img.remove();
+}
 
 function setupMobileNav() {
     var toggle = document.getElementById('navToggle');

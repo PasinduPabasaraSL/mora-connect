@@ -17,6 +17,7 @@ $topicGroups  = Post::groupedCategories();
 // Highlights the current section in the header
 $path = $_SERVER['REQUEST_URI'] ?? '';
 $isTopics = str_contains($path, '/topics/');
+$isRadar  = str_contains($path, '/radar');
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -85,6 +86,7 @@ $isTopics = str_contains($path, '/topics/');
             </div>
 
             <a href="<?= e(url('search')) ?>">Explore</a>
+            <a href="<?= e(url('radar')) ?>"<?= $isRadar ? ' class="is-current"' : '' ?>>Radar</a>
             <a href="<?= e(url('about')) ?>">About</a>
         </nav>
 
@@ -162,6 +164,7 @@ $isTopics = str_contains($path, '/topics/');
         </form>
 
         <a href="<?= e(url()) ?>" class="btn">Home</a>
+        <a href="<?= e(url('radar')) ?>" class="btn">Radar</a>
         <a href="<?= e(url('about')) ?>" class="btn">About</a>
 
         <div class="mobile-topics">
@@ -220,6 +223,7 @@ $isTopics = str_contains($path, '/topics/');
                 <h4>Platform</h4>
                 <ul>
                     <li><a href="<?= e(url()) ?>">All articles</a></li>
+                    <li><a href="<?= e(url('radar')) ?>">Radar</a></li>
                     <?php if (Auth::check()): ?>
                         <li><a href="<?= e(url('posts/create')) ?>">Write an article</a></li>
                         <li><a href="<?= e(url('profile')) ?>">Your articles</a></li>

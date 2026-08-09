@@ -17,7 +17,7 @@ final class SearchController extends Controller
         // With no search term this page is the "Explore" listing, so it shows
         // everything rather than an empty result set.
         $this->view('search/index', [
-            'title' => $term === '' ? 'Explore articles — MoraConnect' : 'Search: ' . $term,
+            'title' => $term === '' ? 'Explore articles - MoraConnect' : 'Search: ' . $term,
             'term'  => $term,
             'posts' => $term === '' ? $posts->allWithAuthor() : $posts->search($term),
         ]);

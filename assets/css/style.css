@@ -221,7 +221,8 @@ p { margin: 0 0 var(--s2); }
   background: none;
 }
 .nav-links > a:hover, .nav-link-btn:hover { color: var(--ink); background: var(--surface-alt); }
-.nav-link-btn.is-active { color: var(--ink); background: var(--surface-alt); }
+.nav-link-btn.is-active,
+.nav-links > a.is-current { color: var(--ink); background: var(--surface-alt); }
 
 .nav-actions { display: flex; align-items: center; gap: var(--s1); }
 
@@ -574,6 +575,31 @@ p { margin: 0 0 var(--s2); }
   background: var(--badge-bg, var(--accent));
 }
 .card-badge { position: absolute; top: var(--s1); right: var(--s1); box-shadow: var(--shadow-xs); }
+
+/* Cards that point at another site: the source is stated above the title so
+   the card cannot be mistaken for something published here. */
+.radar-card .card-body { padding-top: 12px; }
+.source-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent-text);
+  margin-bottom: 7px;
+}
+.radar-card h3 a:hover { color: var(--accent-text); }
+
+.attribution {
+  max-width: 70ch;
+  margin: var(--s5) auto 0;
+  font-size: var(--fs-micro);
+  line-height: 1.7;
+  color: var(--ink-faint);
+  text-align: center;
+}
 
 /* Featured lead article */
 .lead-card {

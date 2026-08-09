@@ -15,7 +15,7 @@ $colors = Post::colorsFor($post['category'] ?? null);
 $image = trim((string) ($post['image_url'] ?? ''));
 ?>
 <div class="cover<?= $image === '' ? ' cover-fallback' : '' ?>"
-     style="--badge-bg: <?= e($colors['bg']) ?>;">
+     data-topic="<?= e($post['category']) ?>" style="--badge-bg: <?= e($colors['bg']) ?>;">
     <?php if ($image !== ''): ?>
         <img src="<?= e($image) ?>" alt="" loading="lazy">
     <?php else: ?>
