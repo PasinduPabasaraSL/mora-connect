@@ -11,9 +11,13 @@ final class HomeController extends Controller
 {
     public function index(): void
     {
+        $posts = new Post();
+
         $this->view('home/index', [
-            'title' => 'MoraConnect — Student Publishing',
-            'posts' => (new Post())->allWithAuthor(),
+            'title'  => 'MoraConnect - Technical Writing by Moratuwa Students',
+            'posts'  => $posts->allWithAuthor(),
+            'counts' => $posts->countsByCategory(),
+            'stats'  => $posts->stats(),
         ]);
     }
 }

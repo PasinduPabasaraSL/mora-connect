@@ -6,11 +6,11 @@ use App\Core\Csrf;
 
 $errors = $errors ?? [];
 ?>
-<div class="auth-page">
+<div class="auth">
     <div class="auth-card">
-        <div class="brand-mark"><span>MC</span></div>
-        <h2>Sign In</h2>
-        <p class="subtitle">Welcome back to MoraConnect.</p>
+        <span class="eyebrow">Sign in</span>
+        <h1>Welcome back.</h1>
+        <p class="lead">Pick up where you left off.</p>
 
         <?php foreach ($errors as $error): ?>
             <div class="alert alert-error"><?= e($error) ?></div>
@@ -20,7 +20,7 @@ $errors = $errors ?? [];
             <?= Csrf::field() ?>
 
             <div class="form-group">
-                <label for="identifier">Username or Email</label>
+                <label for="identifier">Username or email</label>
                 <input type="text" id="identifier" name="identifier" class="form-control"
                        value="<?= e($identifier ?? '') ?>" autocomplete="username" required>
             </div>
@@ -31,9 +31,9 @@ $errors = $errors ?? [];
                        autocomplete="current-password" required>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            <button type="submit" class="btn btn-primary btn-block">Sign in</button>
         </form>
 
-        <p class="switch-link">Don't have an account? <a href="<?= e(url('register')) ?>">Create one</a></p>
+        <p class="switch-link">No account? <a class="link" href="<?= e(url('register')) ?>">Create one</a></p>
     </div>
 </div>

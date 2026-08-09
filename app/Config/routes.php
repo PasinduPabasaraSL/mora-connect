@@ -1,11 +1,4 @@
 <?php
-/**
- * Route table.
- *
- * Order matters: routes are tested top to bottom, so a literal path must be
- * registered before any pattern that could also match it. /posts/create has
- * to precede /posts/{id}, otherwise "create" would be read as an id.
- */
 
 declare(strict_types=1);
 
@@ -13,6 +6,8 @@ use App\Core\Router;
 
 return static function (Router $router): void {
     $router->get('/', 'HomeController@index');
+    $router->get('/about', 'PageController@about');
+    $router->get('/search', 'SearchController@index');
 
     // Auth
     $router->get('/login', 'AuthController@showLogin');
@@ -22,6 +17,8 @@ return static function (Router $router): void {
     $router->post('/logout', 'AuthController@logout');
 
     $router->get('/profile', 'ProfileController@index');
+
+    $router->get('/topics/{slug}', 'TopicController@show');
 
     // Posts
     $router->get('/posts/create', 'PostController@create');

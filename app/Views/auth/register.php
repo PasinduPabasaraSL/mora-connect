@@ -6,11 +6,11 @@ use App\Core\Csrf;
 
 $errors = $errors ?? [];
 ?>
-<div class="auth-page">
+<div class="auth">
     <div class="auth-card">
-        <div class="brand-mark"><span>MC</span></div>
-        <h2>Register</h2>
-        <p class="subtitle">Join the academic conversation.</p>
+        <span class="eyebrow">Create account</span>
+        <h1>Start writing.</h1>
+        <p class="lead">Publish your technical work where other students will find it.</p>
 
         <?php foreach ($errors as $error): ?>
             <div class="alert alert-error"><?= e($error) ?></div>
@@ -36,18 +36,18 @@ $errors = $errors ?? [];
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" class="form-control"
                        minlength="8" autocomplete="new-password" required>
-                <p class="field-hint ui-metadata">At least 8 characters.</p>
+                <p class="hint">At least 8 characters.</p>
             </div>
 
             <div class="form-group">
-                <label for="confirm_password">Confirm Password</label>
+                <label for="confirm_password">Confirm password</label>
                 <input type="password" id="confirm_password" name="confirm_password" class="form-control"
                        minlength="8" autocomplete="new-password" required>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+            <button type="submit" class="btn btn-primary btn-block">Create account</button>
         </form>
 
-        <p class="switch-link">Already have an account? <a href="<?= e(url('login')) ?>">Sign in</a></p>
+        <p class="switch-link">Already registered? <a class="link" href="<?= e(url('login')) ?>">Sign in</a></p>
     </div>
 </div>

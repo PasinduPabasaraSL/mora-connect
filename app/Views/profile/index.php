@@ -1,33 +1,52 @@
 <?php
 
 use App\Core\Auth;
+use App\Core\View;
 
 /** @var array<int, array<string, mixed>> $posts */
 
 $count = count($posts);
+$words = array_sum(array_map(static fn (array $p): int => str_word_count(strip_tags((string) $p['content'])), $posts));
 ?>
-<div class="reading-column">
-    <h2><?= e(Auth::username()) ?></h2>
-    <p class="ui-metadata"><?= $count ?> article<?= $count === 1 ? '' : 's' ?></p>
+<section class="hero" style="padding-bottom: var(--s4);">
+    <span class="eyebrow">Author</span>
+    <h1><?= e(Auth::username()) ?></h1>
 
-    <?php if ($posts === []): ?>
-        <p>You have not written anything yet. <a href="<?= e(url('posts/create')) ?>">Start your first post</a>.</p>
-    <?php else: ?>
-        <div class="profile-posts">
-            <?php foreach ($posts as $post): ?>
-                <div class="profile-post">
-                    <div>
-                        <span class="category-chip"><?= e($post['category']) ?></span>
-                        <h3><a href="<?= e(url('posts/' . (int) $post['id'])) ?>"><?= e($post['title']) ?></a></h3>
-                        <div class="article-meta ui-metadata">
-                            <span><?= e(format_date($post['created_at'])) ?></span>
-                            <span>&bull;</span>
-                            <span><?= e(reading_time((string) $post['content'])) ?></span>
-                        </div>
-                    </div>
-                    <a href="<?= e(url('posts/' . (int) $post['id'] . '/edit')) ?>" class="btn btn-secondary">Edit</a>
-                </div>
-            <?php endforeach; ?>
+    <div class="stats">
+        <div class="stat">
+            <div class="num"><?= $count ?></div>
+            <div class="label">Articles</div>
         </div>
-    <?php endif; ?>
+        <div class="stat">
+            <div class="num"><?= number_format($words) ?></div>
+            <div class="label">Words written</div>
+        </div>
+        <div class="stat">
+            <div class="num"><?= count(array_unique(array_column($posts, 'category'))) ?></div>
+            <div class="label">Topics</div>
+        </div>
+    </div>
+</section>
+
+<div class="section-head">
+    <h2>Your articles</h2>
+    <a href="<?= e(url('posts/create')) ?>" class="btn btn-primary btn-sm">New article</a>
 </div>
+
+<?php if ($posts === []): ?>
+    <?php View::partial('partials/_empty', [
+        'message'    => 'You have not published anything yet.',
+        'actionUrl'  => url('posts/create'),
+        'actionText' => 'Write your first article',
+    ]); ?>
+<?php else: ?>
+    <div class="row-list">
+        <?php foreach ($posts as $i => $post): ?>
+            <?php View::partial('posts/_row', [
+                'post'     => $post,
+                'index'    => $i + 1,
+                'editable' => true,
+            ]); ?>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>

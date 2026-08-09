@@ -15,12 +15,25 @@ return [
         'charset' => 'utf8mb4',
     ],
 
+    /**
+     * Column headings for the Topics menu in the header. Any category missing
+     * from this map still appears, grouped under "More" — so adding a category
+     * below can never make it disappear from the menu.
+     */
+    'topic_groups' => [
+        'Build'          => ['Web Development', 'Mobile'],
+        'Run and deploy' => ['DevOps', 'Systems', 'Databases'],
+        'Data and safety' => ['Machine Learning', 'Security'],
+    ],
+
     'categories' => [
-        'Technology'   => 'linear-gradient(135deg, #2e4d44, #45655b)',
-        'Philosophy'   => 'linear-gradient(135deg, #44474a, #74777a)',
-        'Psychology'   => 'linear-gradient(135deg, #12181b, #42484b)',
-        'Data Science' => 'linear-gradient(135deg, #1a1c1c, #595f63)',
-        'Architecture' => 'linear-gradient(135deg, #2e4d44, #12181b)',
-        'Other'        => 'linear-gradient(135deg, #74777a, #c4c7c9)',
+        'Web Development'  => ['bg' => '#1f3bff', 'ink' => '#ffffff'],
+        'DevOps'           => ['bg' => '#0e9f6e', 'ink' => '#ffffff'],
+        'Machine Learning' => ['bg' => '#7c3aed', 'ink' => '#ffffff'],
+        'Databases'        => ['bg' => '#f5a524', 'ink' => '#111111'],
+        'Security'         => ['bg' => '#be123c', 'ink' => '#ffffff'],
+        'Systems'          => ['bg' => '#334155', 'ink' => '#ffffff'],
+        'Mobile'           => ['bg' => '#0891b2', 'ink' => '#ffffff'],
+        'Other'            => ['bg' => '#64748b', 'ink' => '#ffffff'],
     ],
 ];

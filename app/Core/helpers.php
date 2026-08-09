@@ -46,7 +46,9 @@ if (!function_exists('excerpt')) {
             return $plain;
         }
 
-        return mb_substr($plain, 0, $length) . '...';
+        // Trim trailing punctuation so a cut landing after a full stop does
+        // not read as "...."
+        return rtrim(mb_substr($plain, 0, $length), ' .,;:!?-') . '...';
     }
 }
 

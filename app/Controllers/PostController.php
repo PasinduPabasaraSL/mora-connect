@@ -32,6 +32,7 @@ final class PostController extends Controller
             'title'   => $post['title'],
             'post'    => $post,
             'isOwner' => Auth::check() && (int) $post['user_id'] === Auth::id(),
+            'related' => $this->posts->related((string) $post['category'], (int) $post['id']),
         ]);
     }
 
@@ -40,8 +41,8 @@ final class PostController extends Controller
         $this->requireLogin();
 
         $this->view('posts/create', [
-            'title' => 'Write a new post',
-            'post'  => ['title' => '', 'content' => '', 'category' => ''],
+            'title' => 'Write a new article',
+            'post'  => ['title' => '', 'content' => '', 'category' => '', 'image_url' => ''],
         ]);
     }
 
@@ -58,7 +59,8 @@ final class PostController extends Controller
                 (int) Auth::id(),
                 $input['title'],
                 $input['content'],
-                $input['category']
+                $input['category'],
+                $this->imageOrNull($input['image_url'])
             );
 
             $this->redirect('posts/' . $id);
@@ -100,7 +102,8 @@ final class PostController extends Controller
                 (int) Auth::id(),
                 $input['title'],
                 $input['content'],
-                $input['category']
+                $input['category'],
+                $this->imageOrNull($input['image_url'])
             );
 
             $this->redirect('posts/' . $postId);
@@ -158,9 +161,10 @@ final class PostController extends Controller
     private function postInput(): array
     {
         return [
-            'title'    => $this->request->input('title'),
-            'content'  => $this->request->input('content'),
-            'category' => $this->request->input('category'),
+            'title'     => $this->request->input('title'),
+            'content'   => $this->request->input('content'),
+            'category'  => $this->request->input('category'),
+            'image_url' => $this->request->input('image_url'),
         ];
     }
 
@@ -180,9 +184,34 @@ final class PostController extends Controller
         }
 
         if (!Post::isValidCategory($input['category'])) {
-            $errors[] = 'Please choose a category from the list.';
+            $errors[] = 'Please choose a topic from the list.';
+        }
+
+        if ($input['image_url'] !== '' && !$this->isSafeImageUrl($input['image_url'])) {
+            $errors[] = 'The cover image must be a full http:// or https:// address.';
         }
 
         return $errors;
+    }
+
+    /**
+     * Cover images are rendered into an src attribute, so only ordinary web
+     * addresses are accepted — not data: or other schemes.
+     */
+    private function isSafeImageUrl(string $url): bool
+    {
+        if (filter_var($url, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        return in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true);
+    }
+
+    /**
+     * Empty form field means "no image", which is NULL in the database.
+     */
+    private function imageOrNull(string $url): ?string
+    {
+        return $url === '' ? null : $url;
     }
 }
