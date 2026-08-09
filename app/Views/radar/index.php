@@ -54,14 +54,15 @@ use App\Models\Post;
             <span>All</span>
             <span class="count"><?= (int) $stats['entries'] ?></span>
         </a>
-        <?php foreach ($counts as $topic => $total): ?>
-            <?php if ($total === 0) { continue; } ?>
+        <?php /* Not $total: that name holds the overall entry count used below. */ ?>
+        <?php foreach ($counts as $topic => $topicTotal): ?>
+            <?php if ($topicTotal === 0) { continue; } ?>
             <a class="topic<?= $topic === $category ? ' is-active' : '' ?>"
                style="--badge-bg: <?= e(Post::colorsFor($topic)['bg']) ?>;"
                href="<?= e(url('radar') . '?topic=' . Post::slugFor($topic)) ?>">
                 <span class="dot"></span>
                 <span><?= e($topic) ?></span>
-                <span class="count"><?= (int) $total ?></span>
+                <span class="count"><?= (int) $topicTotal ?></span>
             </a>
         <?php endforeach; ?>
     </div>
@@ -74,11 +75,23 @@ use App\Models\Post;
         'actionText' => 'Back to the homepage',
     ]); ?>
 <?php else: ?>
+    <div class="section-head">
+        <h2><?= $category === null ? 'All entries' : e($category) ?></h2>
+        <span class="meta">Showing <?= (int) $from ?>&ndash;<?= (int) $to ?> of <?= (int) $total ?></span>
+    </div>
+
     <div class="grid">
         <?php foreach ($posts as $post): ?>
             <?php View::partial('radar/_card', ['post' => $post]); ?>
         <?php endforeach; ?>
     </div>
+
+    <?php View::partial('partials/_pagination', [
+        'page'    => $page,
+        'pages'   => $pages,
+        'baseUrl' => url('radar'),
+        'query'   => $query,
+    ]); ?>
 
     <p class="attribution">
         Titles, summaries and cover images belong to their original authors and are

@@ -27,6 +27,34 @@ final class RadarPost extends Model
         );
     }
 
+    /**
+     * One page of entries, optionally limited to a topic.
+     *
+     * LIMIT and OFFSET are cast integers rather than bound parameters: with
+     * emulated prepares turned off, MySQL rejects them when bound as strings.
+     */
+    public function page(?string $category, int $limit, int $offset): array
+    {
+        $where    = $category === null ? '' : ' WHERE category = ?';
+        $bindings = $category === null ? [] : [$category];
+
+        return $this->select(
+            'SELECT * FROM radar_posts' . $where
+            . ' ORDER BY reactions DESC, published_at DESC'
+            . ' LIMIT ' . max(1, $limit) . ' OFFSET ' . max(0, $offset),
+            $bindings
+        );
+    }
+
+    public function total(?string $category = null): int
+    {
+        $row = $category === null
+            ? $this->selectOne('SELECT COUNT(*) AS total FROM radar_posts')
+            : $this->selectOne('SELECT COUNT(*) AS total FROM radar_posts WHERE category = ?', [$category]);
+
+        return (int) ($row['total'] ?? 0);
+    }
+
     /** @return array<string, int> topic => number of entries */
     public function countsByCategory(): array
     {
