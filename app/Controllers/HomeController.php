@@ -13,13 +13,15 @@ final class HomeController extends Controller
     public function index(): void
     {
         $posts = new Post();
+        $radar = new RadarPost();
 
         $this->view('home/index', [
             'title'      => 'MoraConnect - Technical Writing by Moratuwa Students',
             'posts'      => $posts->allWithAuthor(),
             'counts'     => $posts->countsByCategory(),
             'stats'      => $posts->stats(),
-            'radarCount' => (new RadarPost())->total(),
+            'radarCount' => $radar->total(),
+            'radarPicks' => $radar->page(null, 5, 0),
         ]);
     }
 }

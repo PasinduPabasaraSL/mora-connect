@@ -13,20 +13,24 @@ use App\Core\View;
 $lead = $posts[0] ?? null;
 $rest = array_slice($posts, 1);
 ?>
-<section class="hero">
-    <span class="eyebrow">University of Moratuwa</span>
-    <h1>Engineering notes, written by students.</h1>
-    <p class="lead">
-        Build logs, debugging stories and technical write-ups from the people
-        actually doing the work - published openly so the next student does not
-        have to start from scratch.
-    </p>
-    <div class="hero-actions">
-        <a href="#articles" class="btn btn-primary">Read articles</a>
-        <?php if (!Auth::check()): ?>
-            <a href="<?= e(url('register')) ?>" class="btn">Start writing</a>
-        <?php endif; ?>
+<section class="hero hero-split">
+    <div class="hero-copy">
+        <span class="eyebrow">University of Moratuwa</span>
+        <h1>Engineering notes, written by students.</h1>
+        <p class="lead">
+            Build logs, debugging stories and technical write-ups from the people
+            actually doing the work - published openly so the next student does not
+            have to start from scratch.
+        </p>
+        <div class="hero-actions">
+            <a href="#articles" class="btn btn-primary">Read articles</a>
+            <?php if (!Auth::check()): ?>
+                <a href="<?= e(url('register')) ?>" class="btn">Start writing</a>
+            <?php endif; ?>
+        </div>
     </div>
+
+    <?php View::partial('partials/_hero_diagram'); ?>
 
     <div class="stats">
         <div class="stat">
@@ -108,3 +112,20 @@ $rest = array_slice($posts, 1);
         'recent' => array_slice($posts, 0, 4),
     ]); ?>
 </div>
+
+<?php if ($radarPicks !== []): ?>
+    <?php /* Keeps the homepage worth visiting even before anyone has published
+             here. Ordered by reactions, so "Popular" rather than "Latest". */ ?>
+    <section class="radar-strip">
+        <div class="section-head">
+            <h2>Popular on Radar</h2>
+            <a class="link" href="<?= e(url('radar')) ?>">All <?= (int) $radarCount ?> picks &rarr;</a>
+        </div>
+
+        <div class="grid">
+            <?php foreach ($radarPicks as $pick): ?>
+                <?php View::partial('radar/_card', ['post' => $pick]); ?>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>
