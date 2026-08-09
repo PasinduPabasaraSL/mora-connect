@@ -18,7 +18,7 @@ $rest = array_slice($posts, 1);
     <h1>Engineering notes, written by students.</h1>
     <p class="lead">
         Build logs, debugging stories and technical write-ups from the people
-        actually doing the work — published openly so the next student does not
+        actually doing the work - published openly so the next student does not
         have to start from scratch.
     </p>
     <div class="hero-actions">
