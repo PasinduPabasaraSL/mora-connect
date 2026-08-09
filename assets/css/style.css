@@ -60,8 +60,11 @@
   --s5: 48px;
   --s6: 72px;
 
-  --max:     1200px;
-  --reading: 720px;
+  /* Layout runs the full width of the viewport; this gutter is the only thing
+     holding content off the edges, and it grows on larger screens. */
+  --gutter:  clamp(20px, 3.2vw, 64px);
+  /* Long-form article text and forms stay at a readable measure */
+  --reading: 820px;
 
   /* Soft, layered depth: a tight contact shadow plus a wide ambient one.
      Two layers is what stops it looking like a flat drop shadow. */
@@ -128,9 +131,10 @@ a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; cursor: pointer; }
 ul, ol { list-style: none; margin: 0; padding: 0; }
 
-.container { max-width: var(--max); margin: 0 auto; padding: 0 var(--s3); }
+.container { width: 100%; padding: 0 var(--gutter); }
 .reading { max-width: var(--reading); margin: 0 auto; }
-.page { padding: var(--s5) 0 var(--s6); }
+/* Vertical only — a padding shorthand here would cancel the container gutter */
+.page { padding-top: var(--s5); padding-bottom: var(--s6); }
 
 /* ---------- 4. Typography ---------- */
 h1, h2, h3, h4 {
@@ -239,6 +243,10 @@ p { margin: 0 0 var(--s2); }
   box-shadow: var(--shadow-lg);
 }
 .dropdown-panel.open { display: block; animation: panel-in 0.14s ease-out; }
+/* The mega menu lays out in columns, but only once open. Setting display on
+   .mega itself would beat the display:none above (same specificity, later in
+   the file) and leave the panel permanently on screen. */
+.mega.open { display: grid; }
 /* Menus opened from the right edge are anchored there so they cannot
    overflow the viewport */
 .dropdown-panel.menu { left: auto; right: 0; }
@@ -249,7 +257,6 @@ p { margin: 0 0 var(--s2); }
 }
 
 .mega {
-  display: grid;
   grid-template-columns: repeat(3, minmax(158px, 1fr));
   gap: var(--s1) var(--s4);
   padding: var(--s3);
@@ -648,6 +655,12 @@ p { margin: 0 0 var(--s2); }
 .stat .label { font-size: var(--fs-micro); color: var(--ink-faint); font-weight: 500; }
 
 /* ---------- 9. Article body ---------- */
+/* The text column keeps a readable measure while the rail occupies the width
+   left over on large screens. */
+.article-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--s5); align-items: start; }
+.article-layout > article { width: 100%; max-width: var(--reading); margin: 0 auto; }
+.article-rail { position: sticky; top: 88px; }
+
 .article-hero { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); margin-bottom: var(--s4); }
 .article-hero img { width: 100%; max-height: 420px; object-fit: cover; }
 
@@ -776,6 +789,11 @@ textarea.form-control { min-height: 340px; resize: vertical; line-height: 1.75; 
 }
 
 /* ---------- 12. Responsive ---------- */
+@media (max-width: 1100px) {
+  .article-layout { grid-template-columns: 1fr; }
+  .article-rail { position: static; }
+}
+
 @media (max-width: 960px) {
   .split { grid-template-columns: 1fr; gap: var(--s4); }
   .lead-card { grid-template-columns: 1fr; }

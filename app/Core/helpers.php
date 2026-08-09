@@ -15,9 +15,17 @@ if (!function_exists('url')) {
 }
 
 if (!function_exists('asset')) {
+    /**
+     * Appends the file's modification time so an edited stylesheet or script is
+     * never served from the browser cache after a change.
+     */
     function asset(string $path): string
     {
-        return url('assets/' . ltrim($path, '/'));
+        $path = ltrim($path, '/');
+        $file = ROOT_PATH . '/assets/' . $path;
+        $url  = url('assets/' . $path);
+
+        return is_file($file) ? $url . '?v=' . filemtime($file) : $url;
     }
 }
 

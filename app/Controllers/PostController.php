@@ -33,6 +33,7 @@ final class PostController extends Controller
             'post'    => $post,
             'isOwner' => Auth::check() && (int) $post['user_id'] === Auth::id(),
             'related' => $this->posts->related((string) $post['category'], (int) $post['id']),
+            'counts'  => $this->posts->countsByCategory(),
         ]);
     }
 
