@@ -237,8 +237,8 @@ $isRadar  = str_contains($path, '/radar');
             <div class="footer-col">
                 <h4>University</h4>
                 <ul>
-                    <li><a href="https://uom.lk" rel="noopener">uom.lk</a></li>
-                    <li><a href="https://uom.lk/cse" rel="noopener">Dept. of CSE</a></li>
+                    <li><a href="https://uom.lk" rel="noopener">University of Moratuwa</a></li>
+                    <li><a href="https://uom.lk/itfac" rel="noopener">Faculty Of Information Technology</a></li>
                 </ul>
             </div>
         </div>

@@ -719,6 +719,11 @@ p { margin: 0 0 var(--s2); }
 .stat .num { font-size: 26px; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .stat .label { font-size: var(--fs-micro); color: var(--ink-faint); font-weight: 500; }
 
+/* A stat that links somewhere reacts to the pointer; a plain one does not */
+a.stat { display: block; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+a.stat:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+a.stat:hover .label { color: var(--accent-text); }
+
 /* ---------- 9. Article body ---------- */
 /* The text column keeps a readable measure while the rail occupies the width
    left over on large screens. */

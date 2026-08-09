@@ -41,6 +41,11 @@ $rest = array_slice($posts, 1);
             <div class="num"><?= (int) $stats['topics'] ?></div>
             <div class="label">Topics covered</div>
         </div>
+        <?php /* Clickable, since the count is only useful if you can go and read them */ ?>
+        <a class="stat" href="<?= e(url('radar')) ?>">
+            <div class="num"><?= (int) $radarCount ?></div>
+            <div class="label">Discovered on Radar</div>
+        </a>
     </div>
 </section>
 
