@@ -331,15 +331,32 @@ p { margin: 0 0 var(--s2); }
 .avatar-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 7px 3px 3px;
+  gap: 6px;
+  padding: 3px 8px 3px 3px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink-soft);
 }
 .avatar-btn:hover { border-color: var(--border-firm); background: var(--surface-alt); }
-.avatar-btn .avatar { width: 27px; height: 27px; font-size: 11px; }
+.avatar-btn .avatar {
+  width: 27px;
+  height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--accent), var(--accent-strong));
+  color: var(--accent-ink);
+  flex-shrink: 0;
+}
+.avatar-btn .avatar-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
 
 .menu { min-width: 208px; padding: 7px; }
 .menu-head { padding: 9px 11px 10px; border-bottom: 1px solid var(--border); margin-bottom: 5px; }

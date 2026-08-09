@@ -118,12 +118,26 @@ $isRadar  = str_contains($path, '/radar');
                 </button>
 
                 <?php if (Auth::check()): ?>
-                    <a href="<?= e(url('posts/create')) ?>" class="btn btn-primary hide-sm">Write</a>
+                    <a href="<?= e(url('posts/create')) ?>" class="btn btn-primary hide-sm">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                        </svg>
+                        Write
+                    </a>
 
                     <div class="dropdown hide-sm">
                         <button type="button" class="avatar-btn" data-dropdown aria-expanded="false" aria-haspopup="true"
-                                aria-label="Account menu">
-                            <span class="avatar"><?= e(mb_substr((string) Auth::username(), 0, 2)) ?></span>
+                                aria-label="Account menu for <?= e(Auth::username()) ?>">
+                            <span class="avatar">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M20 21a8 8 0 0 0-16 0"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </span>
+                            <span class="avatar-label"><?= e(mb_substr((string) Auth::username(), 0, 2)) ?></span>
                             <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
                                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M6 9l6 6 6-6"></path>
