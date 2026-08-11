@@ -1145,6 +1145,73 @@ textarea.form-control { min-height: 340px; resize: vertical; line-height: 1.75; 
 .alert-error   { background: var(--danger-tint);  border-color: var(--danger);  color: var(--danger); }
 .alert-success { background: var(--success-tint); border-color: var(--success); color: var(--success); }
 
+/* Flash messages.
+   Floated in a corner rather than sitting in the content flow, so the page does
+   not shift down for one load and snap back on the next. The stack itself
+   ignores the pointer; only the toasts inside it can be clicked. */
+.toast-stack {
+  position: fixed;
+  bottom: var(--s3);
+  right: var(--s3);
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+  width: min(330px, calc(100vw - var(--s3)));
+  pointer-events: none;
+}
+/* The editor's insert button owns the bottom-right corner on narrow screens, so
+   messages move across rather than landing on top of it. */
+body.is-editing .toast-stack { right: auto; left: var(--s3); }
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 11px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  /* The stripe carries the outcome, leaving the panel itself neutral so the
+     message stays as legible as body text */
+  border-left: 3px solid var(--border-firm);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  animation: toast-in 0.2s ease-out;
+}
+.toast p { margin: 0; flex: 1; font-size: var(--fs-small); line-height: 1.45; color: var(--ink); }
+.toast-icon { display: inline-flex; flex-shrink: 0; margin-top: 2px; }
+.toast-success { border-left-color: var(--success); }
+.toast-success .toast-icon { color: var(--success); }
+.toast-error { border-left-color: var(--danger); }
+.toast-error .toast-icon { color: var(--danger); }
+
+.toast-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--ink-faint);
+}
+.toast-close:hover { background: var(--surface-alt); color: var(--ink); }
+
+/* Removed from the DOM by the script once this has played */
+.toast.is-leaving { animation: toast-out 0.22s ease-in forwards; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(10px); }
+}
+
 .empty {
   background: var(--surface);
   border: 1px dashed var(--border-firm);
@@ -1683,4 +1750,6 @@ textarea.sheet-textarea { min-height: 0; }
   .card:hover .cover img { transform: none; }
   .insert-toggle { transition: none; }
   .confirm-panel { animation: none; }
+  /* The toast still leaves on its timer; it just goes without sliding */
+  .toast, .toast.is-leaving { animation: none; }
 }

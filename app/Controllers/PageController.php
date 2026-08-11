@@ -12,7 +12,7 @@ final class PageController extends Controller
     public function about(): void
     {
         $this->view('pages/about', [
-            'title' => 'About — MoraConnect',
+            'title' => 'About',
             'stats' => (new Post())->stats(),
         ]);
     }

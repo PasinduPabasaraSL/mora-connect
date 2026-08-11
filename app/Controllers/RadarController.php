@@ -26,7 +26,7 @@ final class RadarController extends Controller
         $offset = ($page - 1) * self::PER_PAGE;
 
         $this->view('radar/index', [
-            'title'    => 'Radar - technical reading from around the web',
+            'title'    => 'Radar',
             'posts'    => $radar->page($category, self::PER_PAGE, $offset),
             'counts'   => $radar->countsByCategory(),
             'stats'    => $radar->stats(),

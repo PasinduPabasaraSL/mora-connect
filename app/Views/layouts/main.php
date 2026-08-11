@@ -212,13 +212,6 @@ $isRadar  = str_contains($path, '/radar');
 </header>
 
 <main class="container page">
-    <?php if ($successFlash !== null): ?>
-        <div class="alert alert-success"><?= e($successFlash) ?></div>
-    <?php endif; ?>
-    <?php if ($errorFlash !== null): ?>
-        <div class="alert alert-error"><?= e($errorFlash) ?></div>
-    <?php endif; ?>
-
     <?= $content ?>
 </main>
 
@@ -269,6 +262,11 @@ $isRadar  = str_contains($path, '/radar');
         </div>
     </div>
 </footer>
+
+<?php View::partial('partials/_toasts', [
+    'success' => $successFlash,
+    'error'   => $errorFlash,
+]); ?>
 
 <?php View::partial('partials/_confirm'); ?>
 

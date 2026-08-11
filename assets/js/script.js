@@ -5,8 +5,43 @@ document.addEventListener('DOMContentLoaded', function () {
     setupHeaderSearch();
     setupBrokenCovers();
     setupConfirmDialog();
+    setupToasts();
     window.MoraHighlight(document);
 });
+
+function setupToasts() {
+    var LIFETIMES = { success: 4500, error: 8000 };
+
+    document.querySelectorAll('.toast').forEach(function (toast) {
+        var lifetime = toast.classList.contains('toast-error') ? LIFETIMES.error : LIFETIMES.success;
+        var timer = window.setTimeout(dismiss, lifetime);
+
+        function dismiss() {
+            window.clearTimeout(timer);
+
+            toast.classList.add('is-leaving');
+            window.setTimeout(function () {
+                toast.remove();
+            }, 260);
+        }
+
+        function hold() {
+            window.clearTimeout(timer);
+        }
+
+        function resume() {
+            window.clearTimeout(timer);
+            timer = window.setTimeout(dismiss, 2000);
+        }
+
+        toast.querySelector('[data-toast-close]').addEventListener('click', dismiss);
+
+        toast.addEventListener('mouseenter', hold);
+        toast.addEventListener('mouseleave', resume);
+        toast.addEventListener('focusin', hold);
+        toast.addEventListener('focusout', resume);
+    });
+}
 
 function setupConfirmDialog() {
     var dialog = document.getElementById('confirmDialog');
