@@ -110,7 +110,9 @@ $shownAt = $post['published_at'] ?? $post['created_at'];
 
                 <form method="POST"
                       action="<?= e(url('posts/' . $postId . '/delete')) ?>"
-                      onsubmit="return confirm('Delete this article? This cannot be undone.');">
+                      data-confirm="<?= e(($isDraft ? 'This draft' : '“' . $post['title'] . '”') . ' will be removed for good, along with its cover, tags and settings.') ?>"
+                      data-confirm-title="<?= $isDraft ? 'Delete this draft?' : 'Delete this article?' ?>"
+                      data-confirm-accept="<?= $isDraft ? 'Delete draft' : 'Delete article' ?>">
                     <?= Csrf::field() ?>
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>

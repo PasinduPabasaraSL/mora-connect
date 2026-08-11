@@ -1,24 +1,96 @@
-/**
- * Header behaviour: mobile drawer, theme switch, dropdown menus and search.
- *
- * The initial theme is applied by a small inline script in the layout <head>,
- * before this file loads — otherwise the page would paint in light mode and
- * visibly flash before switching. This file only handles interaction.
- */
 document.addEventListener('DOMContentLoaded', function () {
     setupMobileNav();
     setupThemeToggle();
     setupDropdowns();
     setupHeaderSearch();
     setupBrokenCovers();
+    setupConfirmDialog();
     window.MoraHighlight(document);
 });
 
-/**
- * Cover images can point at other sites, and those links rot. When one fails to
- * load, the card falls back to the same coloured topic block used by articles
- * that never had an image, instead of showing an empty grey rectangle.
- */
+function setupConfirmDialog() {
+    var dialog = document.getElementById('confirmDialog');
+
+    if (!dialog) {
+        return;
+    }
+
+    var accept = document.getElementById('confirmAccept');
+    var cancel = document.getElementById('confirmCancel');
+    var pending = null;
+    var lastFocus = null;
+
+    document.addEventListener('submit', function (event) {
+        var form = event.target;
+
+        if (!form.dataset || !form.dataset.confirm || form.dataset.confirmed === 'yes') {
+            return;
+        }
+
+        event.preventDefault();
+        open(form);
+    });
+
+    function open(form) {
+        pending = form;
+        lastFocus = document.activeElement;
+
+        document.getElementById('confirmTitle').textContent = form.dataset.confirmTitle || 'Are you sure?';
+        document.getElementById('confirmBody').textContent = form.dataset.confirm;
+        accept.textContent = form.dataset.confirmAccept || 'Delete';
+
+        dialog.hidden = false;
+        document.body.classList.add('has-sheet');
+
+        cancel.focus();
+    }
+
+    function close() {
+        dialog.hidden = true;
+        document.body.classList.remove('has-sheet');
+        pending = null;
+
+        if (lastFocus) {
+            lastFocus.focus();
+        }
+    }
+
+    accept.addEventListener('click', function () {
+        if (!pending) {
+            return;
+        }
+
+        var form = pending;
+
+        form.dataset.confirmed = 'yes';
+        close();
+        form.submit();
+    });
+
+    dialog.addEventListener('click', function (event) {
+        if (event.target.closest('[data-confirm-cancel]')) {
+            close();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (dialog.hidden) {
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            close();
+
+            return;
+        }
+
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            (document.activeElement === accept ? cancel : accept).focus();
+        }
+    });
+}
+
 function setupBrokenCovers() {
     document.querySelectorAll('.cover img').forEach(function (img) {
         img.addEventListener('error', function () {

@@ -3,6 +3,7 @@
 use App\Core\Auth;
 use App\Core\Csrf;
 use App\Core\Session;
+use App\Core\View;
 use App\Models\Post;
 
 /** @var string $content */
@@ -268,6 +269,8 @@ $isRadar  = str_contains($path, '/radar');
         </div>
     </div>
 </footer>
+
+<?php View::partial('partials/_confirm'); ?>
 
 <script src="<?= e(asset('js/script.js')) ?>"></script>
 <?php foreach ($scripts as $script): ?>

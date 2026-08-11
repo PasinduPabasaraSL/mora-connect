@@ -45,6 +45,8 @@
   /* Danger leans rose rather than red, so it stays distinct from orange */
   --danger:      #be123c;
   --danger-tint: #ffe4e9;
+  /* Text on a filled danger button, which only the confirm dialog uses */
+  --danger-ink:  #ffffff;
   --success:     #047857;
   --success-tint:#d1fae5;
 
@@ -113,6 +115,8 @@
 
   --danger:      #fb7185;
   --danger-tint: #3b0d18;
+  /* The rose is light in this theme, so the label on top of it goes dark */
+  --danger-ink:  #2b0710;
   --success:     #34d399;
   --success-tint:#062b20;
 
@@ -1151,6 +1155,55 @@ textarea.form-control { min-height: 340px; resize: vertical; line-height: 1.75; 
 }
 .empty h3 { margin-bottom: 6px; }
 
+/* Confirmation dialog. Sits above the editor's own panels, because a delete can
+   be triggered from inside them. */
+.confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s3);
+}
+.confirm-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6); }
+.confirm-panel {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--s3);
+  text-align: center;
+  animation: confirm-in 0.16s ease-out;
+}
+.confirm-icon {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--s2);
+  border-radius: 50%;
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+.confirm-panel h2 { font-size: 19px; margin: 0 0 6px; }
+.confirm-panel p { font-size: var(--fs-small); color: var(--ink-soft); margin: 0 auto; max-width: 34ch; }
+.confirm-actions { display: flex; gap: var(--s1); margin-top: var(--s3); }
+.confirm-actions .btn { flex: 1; }
+/* Filled here, unlike everywhere else: inside the dialog this is the primary
+   action and has to look like the thing you came to do. */
+.confirm-actions .btn-danger { background: var(--danger); border-color: var(--danger); color: var(--danger-ink); }
+.confirm-actions .btn-danger:hover { background: color-mix(in srgb, var(--danger) 85%, #000); }
+
+@keyframes confirm-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
 .auth { display: flex; justify-content: center; padding: var(--s5) 0 var(--s6); }
 .auth-card {
   width: 100%;
@@ -1629,4 +1682,5 @@ textarea.sheet-textarea { min-height: 0; }
   .card:hover { transform: none; }
   .card:hover .cover img { transform: none; }
   .insert-toggle { transition: none; }
+  .confirm-panel { animation: none; }
 }

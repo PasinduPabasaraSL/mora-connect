@@ -54,7 +54,9 @@ $target = $isDraft && $editable
                 <form method="POST"
                       action="<?= e(url('posts/' . (int) $post['id'] . '/delete')) ?>"
                       class="inline-form"
-                      onsubmit="return confirm('Delete this draft? This cannot be undone.');">
+                      data-confirm="This draft and everything written in it will be removed. This cannot be undone."
+                      data-confirm-title="Delete this draft?"
+                      data-confirm-accept="Delete draft">
                     <?= Csrf::field() ?>
                     <button type="submit" class="icon-btn icon-btn-danger" title="Delete this draft"
                             aria-label="Delete draft <?= e(trim((string) $post['title']) === '' ? 'Untitled draft' : $post['title']) ?>">
