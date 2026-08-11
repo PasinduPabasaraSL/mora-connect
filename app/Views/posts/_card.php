@@ -15,16 +15,16 @@ use App\Core\View;
 
     <div class="card-body">
         <h3><a href="<?= e(url('posts/' . (int) $post['id'])) ?>"><?= e($post['title']) ?></a></h3>
-        <p class="excerpt"><?= e(excerpt((string) $post['content'], 110)) ?></p>
+        <p class="excerpt"><?= e(post_summary($post, 110)) ?></p>
 
         <div class="card-meta">
             <?php if (isset($post['username'])): ?>
                 <span><?= e($post['username']) ?></span>
                 <span class="sep">&middot;</span>
             <?php endif; ?>
-            <span><?= e(format_date($post['created_at'] ?? null)) ?></span>
+            <span><?= e(post_date($post)) ?></span>
             <span class="sep">&middot;</span>
-            <span><?= e(reading_time((string) $post['content'])) ?></span>
+            <span><?= e(post_minutes($post)) ?></span>
         </div>
     </div>
 </article>

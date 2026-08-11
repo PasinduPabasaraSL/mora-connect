@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupDropdowns();
     setupHeaderSearch();
     setupBrokenCovers();
+    window.MoraHighlight(document);
 });
 
 /**
@@ -182,3 +183,98 @@ function closeSearch(form, toggle, input) {
     // Keep the collapsed field out of the tab order
     input.setAttribute('tabindex', '-1');
 }
+
+/**
+ * Colours code blocks in articles and in the editor's preview.
+ *
+ * This is deliberately a rough pass rather than a real parser: one language
+ * agnostic tokeniser for strings, comments, numbers and common keywords covers
+ * the languages students write about without shipping a highlighting library.
+ * Tokens are found in the raw text and each piece is escaped as it is written
+ * out, so the markup added here can only ever be the spans below.
+ */
+window.MoraHighlight = (function () {
+    var KEYWORDS = [
+        'abstract', 'and', 'as', 'async', 'await', 'begin', 'bool', 'boolean', 'break', 'case',
+        'catch', 'char', 'class', 'const', 'constructor', 'continue', 'def', 'default', 'delete',
+        'do', 'double', 'echo', 'elif', 'else', 'elseif', 'end', 'enum', 'except', 'export',
+        'extends', 'false', 'final', 'finally', 'float', 'fn', 'for', 'foreach', 'from', 'func',
+        'function', 'global', 'go', 'if', 'implements', 'import', 'in', 'include', 'instanceof',
+        'int', 'interface', 'is', 'lambda', 'let', 'match', 'module', 'namespace', 'new', 'nil',
+        'none', 'not', 'null', 'or', 'package', 'pass', 'print', 'private', 'protected', 'public',
+        'raise', 'readonly', 'record', 'require', 'return', 'select', 'self', 'static', 'string',
+        'struct', 'super', 'switch', 'template', 'then', 'this', 'throw', 'trait', 'true', 'try',
+        'type', 'typeof', 'union', 'unset', 'use', 'var', 'void', 'when', 'where', 'while',
+        'with', 'yield'
+    ];
+
+    // Languages where # starts a comment. In CSS it starts a colour or an id,
+    // so guessing wrong there would grey out half the block.
+    var HASH = ['php', 'py', 'python', 'rb', 'ruby', 'sh', 'bash', 'shell', 'zsh', 'yml', 'yaml',
+                'toml', 'ini', 'conf', 'dockerfile', 'makefile', 'perl', 'r'];
+
+    var DASH = ['sql', 'mysql', 'postgres', 'postgresql', 'sqlite', 'plsql', 'hs', 'haskell', 'lua'];
+
+    function pattern(language) {
+        var comments = ['/\\*[\\s\\S]*?(?:\\*/|$)', '//[^\\n]*'];
+
+        if (HASH.indexOf(language) !== -1) {
+            comments.push('#[^\\n]*');
+        }
+
+        if (DASH.indexOf(language) !== -1) {
+            comments.push('--[^\\n]*');
+        }
+
+        return new RegExp(
+            '(' + comments.join('|') + ')'
+            + '|(\'(?:\\\\.|[^\'\\\\\\n])*\'|"(?:\\\\.|[^"\\\\\\n])*"|`(?:\\\\.|[^`\\\\])*`)'
+            + '|(\\b0[xb][\\da-fA-F]+\\b|\\b\\d+(?:\\.\\d+)?\\b)'
+            + '|(\\b(?:' + KEYWORDS.join('|') + ')\\b)',
+            'g'
+        );
+    }
+
+    function escape(value) {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function highlight(code, language) {
+        var regex = pattern(language);
+        var out = '';
+        var last = 0;
+        var match;
+
+        while ((match = regex.exec(code)) !== null) {
+            out += escape(code.slice(last, match.index));
+
+            var token = match[1] ? 'com' : match[2] ? 'str' : match[3] ? 'num' : 'key';
+
+            out += '<span class="tok-' + token + '">' + escape(match[0]) + '</span>';
+            last = regex.lastIndex;
+
+            // A zero-length match would spin forever
+            if (match[0] === '') {
+                regex.lastIndex += 1;
+            }
+        }
+
+        return out + escape(code.slice(last));
+    }
+
+    return function (root) {
+        (root || document).querySelectorAll('pre > code').forEach(function (code) {
+            if (code.dataset.highlighted === 'yes') {
+                return;
+            }
+
+            var language = (code.parentNode.dataset.language || '').toLowerCase();
+
+            code.dataset.highlighted = 'yes';
+            code.innerHTML = highlight(code.textContent, language);
+        });
+    };
+}());

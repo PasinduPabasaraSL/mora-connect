@@ -20,6 +20,9 @@ final class View
 
         $title = $data['title'] ?? Config::get('name');
 
+        $scripts   = $data['scripts'] ?? [];
+        $bodyClass = $data['bodyClass'] ?? '';
+
         require $layoutFile;
     }
 

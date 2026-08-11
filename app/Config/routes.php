@@ -23,9 +23,12 @@ return static function (Router $router): void {
 
     // Posts
     $router->get('/posts/create', 'PostController@create');
+    $router->post('/posts/autosave', 'PostController@autosave');
     $router->post('/posts', 'PostController@store');
-    $router->get('/posts/{id}', 'PostController@show');
+    $router->get('/posts/{key}', 'PostController@show');
     $router->get('/posts/{id}/edit', 'PostController@edit');
+    $router->get('/posts/{id}/preview', 'PostController@preview');
     $router->post('/posts/{id}', 'PostController@update');
     $router->post('/posts/{id}/delete', 'PostController@destroy');
+    $router->post('/posts/{id}/unpublish', 'PostController@unpublish');
 };

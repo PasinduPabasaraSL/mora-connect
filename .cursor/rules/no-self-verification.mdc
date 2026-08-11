@@ -1,0 +1,37 @@
+---
+description: Do not test, verify or audit work unless explicitly asked
+alwaysApply: true
+---
+
+# Do not verify unless asked
+
+After making a change, stop and report it. Do not go looking for confirmation
+that it works, and do not go looking for other things that might be wrong.
+
+Only run checks when the user asks for them in that message — for example
+"test it", "verify this", "check for bugs", "does it still work?".
+
+## Not allowed on my own initiative
+
+- Writing or running verification scripts (`_verify*.sh`, test harnesses, throwaway PHP or Node scripts)
+- Driving the site with curl, Puppeteer, or a headless browser
+- Taking screenshots to confirm how something looks
+- Creating temporary users, posts or rows in the database to exercise a flow
+- Reviewing files I just changed hunting for further bugs
+- Installing tooling in order to check something
+
+## Still expected as part of writing the change
+
+These are part of producing the code, not verification of it:
+
+- Reading the files I am about to edit, and whatever they depend on
+- Checking syntax and linter errors on files I touched, and fixing what I broke
+- Running a migration or command the user asked for
+
+## Reporting
+
+Say what changed and where. If something is worth checking, name it and let the
+user decide:
+
+> Added the delete button to draft rows in `app/Views/posts/_row.php` and pointed
+> the redirect back to the profile. I have not run this — say the word and I will.

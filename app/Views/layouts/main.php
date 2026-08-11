@@ -7,6 +7,11 @@ use App\Models\Post;
 
 /** @var string $content */
 /** @var string $title */
+/** @var list<string> $scripts   extra scripts this page needs */
+/** @var string       $bodyClass page-specific hook for CSS */
+
+$scripts   = $scripts ?? [];
+$bodyClass = $bodyClass ?? '';
 
 $successFlash = Session::pullFlash('success');
 $errorFlash   = Session::pullFlash('error');
@@ -42,7 +47,7 @@ $isRadar  = str_contains($path, '/radar');
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= e(asset('css/style.css')) ?>">
 </head>
-<body>
+<body<?= $bodyClass === '' ? '' : ' class="' . e($bodyClass) . '"' ?>>
 <header class="site-header">
     <div class="container">
         <a href="<?= e(url()) ?>" class="brand">
@@ -265,5 +270,8 @@ $isRadar  = str_contains($path, '/radar');
 </footer>
 
 <script src="<?= e(asset('js/script.js')) ?>"></script>
+<?php foreach ($scripts as $script): ?>
+    <script src="<?= e(asset($script)) ?>"></script>
+<?php endforeach; ?>
 </body>
 </html>

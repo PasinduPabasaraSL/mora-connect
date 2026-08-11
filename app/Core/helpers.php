@@ -60,6 +60,58 @@ if (!function_exists('excerpt')) {
     }
 }
 
+if (!function_exists('post_summary')) {
+    /**
+     * The line of text shown under an article's title in listings.
+     *
+     * An author-written summary is used when there is one; otherwise the body is
+     * flattened to text first, because an excerpt taken straight from markup
+     * would run words together where tags used to be.
+     *
+     * @param array<string, mixed> $post
+     */
+    function post_summary(array $post, int $length = 160): string
+    {
+        $description = trim((string) ($post['description'] ?? ''));
+
+        if ($description !== '') {
+            return excerpt($description, $length);
+        }
+
+        return excerpt(App\Core\Html::toText((string) ($post['content'] ?? '')), $length);
+    }
+}
+
+if (!function_exists('post_minutes')) {
+    /**
+     * Reading time as stored when the article was saved, so every listing and
+     * the article itself quote the same number.
+     *
+     * @param array<string, mixed> $post
+     */
+    function post_minutes(array $post): string
+    {
+        $minutes = (int) ($post['reading_minutes'] ?? 0);
+
+        return ($minutes > 0 ? $minutes : App\Core\Html::readingMinutes(
+            App\Core\Html::wordCount((string) ($post['content'] ?? ''))
+        )) . ' min read';
+    }
+}
+
+if (!function_exists('post_date')) {
+    /**
+     * When an article went live, falling back to when it was written for rows
+     * that predate the published_at column.
+     *
+     * @param array<string, mixed> $post
+     */
+    function post_date(array $post): string
+    {
+        return format_date($post['published_at'] ?? $post['created_at'] ?? null);
+    }
+}
+
 if (!function_exists('format_date')) {
     function format_date(?string $timestamp): string
     {

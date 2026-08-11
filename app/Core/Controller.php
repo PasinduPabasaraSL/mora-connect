@@ -24,6 +24,24 @@ abstract class Controller
         exit;
     }
 
+    /**
+     * Ends the request with a JSON body. Used by the editor's autosave, which
+     * needs a machine-readable answer rather than a rendered page.
+     *
+     * @param array<string, mixed> $payload
+     */
+    protected function json(array $payload, int $status = 200): never
+    {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        // Autosave replies must never be reused by a proxy or the back button
+        header('Cache-Control: no-store');
+
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        exit;
+    }
+
     protected function requireLogin(): void
     {
         if (!Auth::check()) {

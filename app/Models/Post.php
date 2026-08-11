@@ -9,6 +9,27 @@ use App\Core\Model;
 
 final class Post extends Model
 {
+    public const STATUS_DRAFT     = 'draft';
+    public const STATUS_PUBLISHED = 'published';
+
+    public const VISIBILITY_PUBLIC   = 'public';
+    public const VISIBILITY_UNLISTED = 'unlisted';
+
+    private const LISTABLE = "blogPost.status = 'published' AND blogPost.visibility = 'public'";
+
+    /**
+     * Columns the editor owns. Used to build INSERT and UPDATE statements from
+     * one array so adding a field does not mean editing three method
+     * signatures.
+     *
+     * @var list<string>
+     */
+    private const WRITABLE = [
+        'title', 'subtitle', 'content', 'content_format', 'category', 'slug',
+        'description', 'tags', 'status', 'visibility', 'comments_enabled',
+        'word_count', 'reading_minutes', 'image_url', 'published_at',
+    ];
+
     /**
      * @return list<string>
      */
@@ -69,9 +90,55 @@ final class Post extends Model
         return strtolower(str_replace(' ', '-', $category));
     }
 
+    public static function slugify(string $text): string
+    {
+        $slug = strtolower(trim($text));
+        $slug = preg_replace('/[^a-z0-9]+/u', '-', $slug) ?? '';
+
+        return trim(mb_substr($slug, 0, 200), '-');
+    }
+
     /**
-     * Reverses slugFor(), so /topics/web-development finds "Web Development".
+     * Comma separated tags cleaned into a list, de-duplicated and capped so a
+     * pasted wall of text cannot become 400 tags.
+     *
+     * @return list<string>
      */
+    public static function parseTags(string $raw, int $max = 5): array
+    {
+        $tags = [];
+
+        foreach (explode(',', $raw) as $tag) {
+            $tag = trim(preg_replace('/\s+/', ' ', $tag) ?? '');
+
+            if ($tag === '') {
+                continue;
+            }
+
+            $tag = mb_substr($tag, 0, 30);
+
+            // Case-insensitive de-dupe, keeping the author's capitalisation
+            if (!in_array(mb_strtolower($tag), array_map('mb_strtolower', $tags), true)) {
+                $tags[] = $tag;
+            }
+
+            if (count($tags) >= $max) {
+                break;
+            }
+        }
+
+        return $tags;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function tagList(?string $stored): array
+    {
+        return $stored === null || trim($stored) === '' ? [] : self::parseTags($stored, 10);
+    }
+
+
     public static function categoryFromSlug(string $slug): ?string
     {
         foreach (self::categories() as $category) {
@@ -89,7 +156,8 @@ final class Post extends Model
             'SELECT blogPost.*, users.username
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
-             ORDER BY blogPost.created_at DESC'
+             WHERE ' . self::LISTABLE . '
+             ORDER BY COALESCE(blogPost.published_at, blogPost.created_at) DESC'
         );
     }
 
@@ -99,33 +167,25 @@ final class Post extends Model
             'SELECT blogPost.*, users.username
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
-             WHERE blogPost.category = ?
-             ORDER BY blogPost.created_at DESC',
+             WHERE blogPost.category = ? AND ' . self::LISTABLE . '
+             ORDER BY COALESCE(blogPost.published_at, blogPost.created_at) DESC',
             [$category]
         );
     }
 
-    /**
-     * Other articles on the same topic, used to keep the article page from
-     * ending in a dead stop.
-     */
     public function related(string $category, int $excludeId, int $limit = 3): array
     {
         return $this->select(
             'SELECT blogPost.*, users.username
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
-             WHERE blogPost.category = ? AND blogPost.id <> ?
-             ORDER BY blogPost.created_at DESC
+             WHERE blogPost.category = ? AND blogPost.id <> ? AND ' . self::LISTABLE . '
+             ORDER BY COALESCE(blogPost.published_at, blogPost.created_at) DESC
              LIMIT ' . $limit,
             [$category, $excludeId]
         );
     }
 
-    /**
-     * Title and body search. The term is escaped for LIKE as well as bound,
-     * so a user typing % or _ searches for those characters literally.
-     */
     public function search(string $term): array
     {
         $like = '%' . addcslashes($term, '%_\\') . '%';
@@ -134,10 +194,12 @@ final class Post extends Model
             'SELECT blogPost.*, users.username
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
-             WHERE blogPost.title LIKE ? OR blogPost.content LIKE ?
-             ORDER BY blogPost.created_at DESC
+             WHERE (blogPost.title LIKE ? OR blogPost.subtitle LIKE ?
+                    OR blogPost.content LIKE ? OR blogPost.tags LIKE ?)
+               AND ' . self::LISTABLE . '
+             ORDER BY COALESCE(blogPost.published_at, blogPost.created_at) DESC
              LIMIT 50',
-            [$like, $like]
+            [$like, $like, $like, $like]
         );
     }
 
@@ -152,6 +214,17 @@ final class Post extends Model
         );
     }
 
+    public function findBySlugWithAuthor(string $slug): ?array
+    {
+        return $this->selectOne(
+            'SELECT blogPost.*, users.username
+             FROM blogPost
+             JOIN users ON blogPost.user_id = users.id
+             WHERE blogPost.slug = ?',
+            [$slug]
+        );
+    }
+
     public function find(int $id): ?array
     {
         return $this->selectOne('SELECT * FROM blogPost WHERE id = ?', [$id]);
@@ -160,7 +233,9 @@ final class Post extends Model
     public function forUser(int $userId): array
     {
         return $this->select(
-            'SELECT * FROM blogPost WHERE user_id = ? ORDER BY created_at DESC',
+            "SELECT * FROM blogPost
+              WHERE user_id = ?
+              ORDER BY status = 'published', updated_at DESC",
             [$userId]
         );
     }
@@ -175,7 +250,13 @@ final class Post extends Model
     {
         $counts = array_fill_keys(self::categories(), 0);
 
-        foreach ($this->select('SELECT category, COUNT(*) AS total FROM blogPost GROUP BY category') as $row) {
+        $rows = $this->select(
+            'SELECT category, COUNT(*) AS total FROM blogPost
+              WHERE ' . self::LISTABLE . '
+              GROUP BY category'
+        );
+
+        foreach ($rows as $row) {
             $counts[$row['category']] = (int) $row['total'];
         }
 
@@ -191,7 +272,8 @@ final class Post extends Model
             'SELECT COUNT(*) AS articles,
                     COUNT(DISTINCT user_id) AS writers,
                     COUNT(DISTINCT category) AS topics
-             FROM blogPost'
+             FROM blogPost
+             WHERE ' . self::LISTABLE
         ) ?? [];
 
         return [
@@ -201,11 +283,18 @@ final class Post extends Model
         ];
     }
 
-    public function create(int $userId, string $title, string $content, string $category, ?string $imageUrl = null): int
+    /**
+     * @param array<string, mixed> $fields
+     */
+    public function create(int $userId, array $fields): int
     {
+        $fields  = $this->writableOnly($fields);
+        $columns = array_keys($fields);
+
         $this->execute(
-            'INSERT INTO blogPost (user_id, title, content, category, image_url) VALUES (?, ?, ?, ?, ?)',
-            [$userId, $title, $content, $category, $imageUrl]
+            'INSERT INTO blogPost (user_id, ' . implode(', ', $columns) . ')
+             VALUES (?, ' . implode(', ', array_fill(0, count($columns), '?')) . ')',
+            array_merge([$userId], array_values($fields))
         );
 
         return $this->lastInsertId();
@@ -214,13 +303,75 @@ final class Post extends Model
     /**
      * The user_id condition is part of the query, so a tampered post id can
      * never update someone else's row even if a controller check is missed.
+     *
+     * @param array<string, mixed> $fields
      */
-    public function update(int $id, int $userId, string $title, string $content, string $category, ?string $imageUrl = null): bool
+    public function update(int $id, int $userId, array $fields): bool
     {
-        return $this->execute(
-            'UPDATE blogPost SET title = ?, content = ?, category = ?, image_url = ? WHERE id = ? AND user_id = ?',
-            [$title, $content, $category, $imageUrl, $id, $userId]
-        ) > 0;
+        $fields = $this->writableOnly($fields);
+
+        if ($fields === []) {
+            return false;
+        }
+
+        $assignments = implode(', ', array_map(
+            static fn (string $column): string => $column . ' = ?',
+            array_keys($fields)
+        ));
+
+        // rowCount() is 0 when a save changes nothing, which is not a failure,
+        // so success is measured by the row existing rather than by rows hit.
+        $this->execute(
+            'UPDATE blogPost SET ' . $assignments . ' WHERE id = ? AND user_id = ?',
+            array_merge(array_values($fields), [$id, $userId])
+        );
+
+        return $this->ownedBy($id, $userId);
+    }
+
+    public function ownedBy(int $id, int $userId): bool
+    {
+        return $this->selectOne(
+            'SELECT id FROM blogPost WHERE id = ? AND user_id = ?',
+            [$id, $userId]
+        ) !== null;
+    }
+
+    /**
+     * Drops anything the editor is not allowed to write, so a crafted form
+     * field can never reach a column such as user_id or created_at.
+     *
+     * @param  array<string, mixed> $fields
+     * @return array<string, mixed>
+     */
+    private function writableOnly(array $fields): array
+    {
+        return array_intersect_key($fields, array_flip(self::WRITABLE));
+    }
+
+    /**
+     * A slug that no other article is using, by appending -2, -3 and so on.
+     * $ignoreId lets an article keep its own slug while being edited.
+     */
+    public function uniqueSlug(string $base, ?int $ignoreId = null): string
+    {
+        $base = $base === '' ? 'article' : $base;
+        $slug = $base;
+
+        for ($suffix = 2; $this->slugTaken($slug, $ignoreId); $suffix++) {
+            $slug = $base . '-' . $suffix;
+        }
+
+        return $slug;
+    }
+
+    private function slugTaken(string $slug, ?int $ignoreId): bool
+    {
+        $row = $ignoreId === null
+            ? $this->selectOne('SELECT id FROM blogPost WHERE slug = ?', [$slug])
+            : $this->selectOne('SELECT id FROM blogPost WHERE slug = ? AND id <> ?', [$slug, $ignoreId]);
+
+        return $row !== null;
     }
 
     public function delete(int $id, int $userId): bool

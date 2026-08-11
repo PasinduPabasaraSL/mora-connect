@@ -71,7 +71,7 @@ $rest = array_slice($posts, 1);
         <?php else: ?>
             <div class="section-head">
                 <h2>Featured</h2>
-                <span class="meta"><?= e(format_date($lead['created_at'])) ?></span>
+                <span class="meta"><?= e(post_date($lead)) ?></span>
             </div>
 
             <article class="lead-card">
@@ -82,13 +82,13 @@ $rest = array_slice($posts, 1);
                 <div class="lead-card-body">
                     <?php View::partial('posts/_badge', ['category' => (string) $lead['category']]); ?>
                     <h2><a href="<?= e(url('posts/' . (int) $lead['id'])) ?>"><?= e($lead['title']) ?></a></h2>
-                    <p class="excerpt"><?= e(excerpt((string) $lead['content'], 200)) ?></p>
+                    <p class="excerpt"><?= e(post_summary($lead, 200)) ?></p>
 
                     <div class="byline">
                         <span class="avatar"><?= e(mb_substr((string) $lead['username'], 0, 2)) ?></span>
                         <span class="author"><?= e($lead['username']) ?></span>
                         <span class="sep">&middot;</span>
-                        <span><?= e(reading_time((string) $lead['content'])) ?></span>
+                        <span><?= e(post_minutes($lead)) ?></span>
                     </div>
                 </div>
             </article>

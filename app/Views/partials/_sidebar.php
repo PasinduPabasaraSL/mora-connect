@@ -41,7 +41,7 @@ use App\Models\Post;
                     <li>
                         <a class="stack" href="<?= e(url('posts/' . (int) $post['id'])) ?>">
                             <?= e($post['title']) ?>
-                            <span><?= e(format_date($post['created_at'])) ?> &middot; <?= e(reading_time((string) $post['content'])) ?></span>
+                            <span><?= e(post_date($post)) ?> &middot; <?= e(post_minutes($post)) ?></span>
                         </a>
                     </li>
                 <?php endforeach; ?>
