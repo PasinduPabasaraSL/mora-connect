@@ -540,6 +540,12 @@ p { margin: 0 0 var(--s2); }
 .btn-danger { background: var(--surface); border-color: var(--border); color: var(--danger); }
 .btn-danger:hover { background: var(--danger-tint); border-color: var(--danger); }
 
+/* Google's brand guidelines ask for their mark on a neutral surface with a
+   visible border, which is what the plain .btn already is — only the taller
+   target and heavier label are added here. */
+.btn-google { gap: 10px; padding: 11px 15px; font-weight: 500; }
+.btn-google svg { flex: none; }
+
 .btn-block { width: 100%; }
 .btn-sm { padding: 6px 11px; font-size: var(--fs-micro); }
 .inline-form { display: inline; margin: 0; }
@@ -1284,6 +1290,25 @@ body.is-editing .toast-stack { right: auto; left: var(--s3); }
 .auth-card h1 { font-size: 25px; margin-bottom: 6px; }
 .auth-card .lead { font-size: var(--fs-small); margin-bottom: var(--s3); }
 .switch-link { font-size: var(--fs-small); text-align: center; color: var(--ink-soft); margin: var(--s3) 0 0; }
+
+/* A rule with the word sitting in a gap in the middle of it. */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: var(--s3) 0;
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 
 /* ---------- 11. Footer & errors ---------- */
 .site-footer { background: var(--surface); border-top: 1px solid var(--border); margin-top: var(--s6); }

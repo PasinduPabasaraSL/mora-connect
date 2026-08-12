@@ -10,7 +10,10 @@ Options -Indexes
     RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
 </IfModule>
 
-<FilesMatch "\.(sql|md|json|lock)$">
+# Files that live in the web root but must never be downloadable. The leading
+# ^\. covers .env and .gitignore: Apache's own default only protects .ht*, so
+# without this a request for /.env would return the database password.
+<FilesMatch "^\.|\.(env|sql|md|json|lock)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>

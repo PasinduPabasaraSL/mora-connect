@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,      -- stores password_hash() output, never plain text
+    google_id VARCHAR(64) NULL UNIQUE,   -- Google's subject id, set for accounts that sign in with Google
+    password VARCHAR(255) NULL,          -- password_hash() output, never plain text; null for Google-only accounts
     role VARCHAR(50) NOT NULL DEFAULT 'student',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

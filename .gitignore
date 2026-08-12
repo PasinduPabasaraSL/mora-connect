@@ -2,9 +2,11 @@
 uploads/*
 !uploads/.gitkeep
 
-# Local environment overrides
+# Local environment overrides — the template stays tracked so the list of
+# settings is documented, but never the file holding the real values
 .env
 .env.*
+!.env.example
 config/database.local.php
 
 # PHP / Composer (not used yet, but harmless to pre-empt)

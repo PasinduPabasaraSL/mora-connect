@@ -17,6 +17,11 @@ return static function (Router $router): void {
     $router->post('/register', 'AuthController@register');
     $router->post('/logout', 'AuthController@logout');
 
+    // google OAuth2
+    $router->get('/auth/google', 'AuthController@google');
+    $router->get('/google-callback.php', 'AuthController@googleCallback');
+    $router->get('/auth/google/callback', 'AuthController@googleCallback');
+
     $router->get('/profile', 'ProfileController@index');
 
     $router->get('/topics/{slug}', 'TopicController@show');

@@ -1,6 +1,7 @@
 <?php
 
 use App\Core\Csrf;
+use App\Core\View;
 
 /** @var list<string> $errors */
 
@@ -33,6 +34,8 @@ $errors = $errors ?? [];
 
             <button type="submit" class="btn btn-primary btn-block">Sign in</button>
         </form>
+
+        <?php View::partial('partials/_google_button', ['label' => 'Continue with Google']); ?>
 
         <p class="switch-link">No account? <a class="link" href="<?= e(url('register')) ?>">Create one</a></p>
     </div>

@@ -9,6 +9,9 @@ require APP_PATH . '/Core/Autoloader.php';
 
 App\Core\Autoloader::register();
 
+// Before the config, which reads credentials out of it
+App\Core\Env::load(ROOT_PATH . '/.env');
+
 App\Core\Config::load(APP_PATH . '/Config/config.php');
 
 require APP_PATH . '/Core/helpers.php';
