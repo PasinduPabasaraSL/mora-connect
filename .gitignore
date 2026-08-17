@@ -1,6 +1,11 @@
-# User-uploaded content — keep the directory, ignore its contents
+# User-uploaded content — keep the directory structure and the rules that stop
+# Apache executing what lands in it, ignore the uploads themselves
 uploads/*
 !uploads/.gitkeep
+!uploads/.htaccess
+!uploads/avatars/
+uploads/avatars/*
+!uploads/avatars/.gitkeep
 
 # Local environment overrides — the template stays tracked so the list of
 # settings is documented, but never the file holding the real values

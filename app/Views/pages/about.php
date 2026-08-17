@@ -34,7 +34,7 @@ $updated = $radar['updated'] ?? null;
             <p>
                 Everything here is written by students about work they actually
                 did: build logs, debugging stories, benchmarks and notes on tools
-                they have used in anger. Concrete beats general — the command you
+                they have used in anger. Concrete beats general - the command you
                 ran and what it printed is worth more than a summary of the
                 documentation.
             </p>
@@ -173,7 +173,7 @@ $updated = $radar['updated'] ?? null;
                 </div>
                 <div>
                     <dt>Front end</dt>
-                    <dd>Hand-written CSS and plain JavaScript &mdash; no build step, no bundler</dd>
+                    <dd>Hand-written CSS and plain JavaScript - no build step, no bundler</dd>
                 </div>
                 <div>
                     <dt>Dependencies</dt>
@@ -190,7 +190,7 @@ $updated = $radar['updated'] ?? null;
                     <summary>Who can write here?</summary>
                     <p>
                         Any student with an account. There is no application and
-                        no editor to get past &mdash; register, and the editor is
+                        no editor to get past - register, and the editor is
                         open to you.
                     </p>
                 </details>
@@ -238,7 +238,7 @@ $updated = $radar['updated'] ?? null;
                     <p>
                         Those are Radar entries, not student work. They are
                         credited to their original authors and always open on the
-                        site that published them &mdash; see
+                        site that published them: see
                         <a class="link" href="#radar">Where Radar comes from</a>.
                     </p>
                 </details>

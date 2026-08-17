@@ -4,10 +4,31 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Core\Avatar;
 use App\Core\Model;
 
 final class User extends Model
 {
+    /** Where the profile picture comes from */
+    public const AVATAR_UPLOAD   = 'upload';
+    public const AVATAR_GOOGLE   = 'google';
+    public const AVATAR_INITIALS = 'initials';
+
+    /**
+     * Fields a person may edit on their own profile.
+     *
+     * username is not here and never will be: it identifies the account and
+     * appears in author URLs. Nor are email, role or anything to do with
+     * authentication, so a crafted form cannot reach them.
+     *
+     * @var list<string>
+     */
+    private const EDITABLE = [
+        'display_name', 'headline', 'bio',
+        'faculty', 'programme', 'study_year',
+        'website', 'github', 'linkedin', 'interests',
+    ];
+
     public function findByLogin(string $identifier): ?array
     {
         return $this->selectOne(
@@ -124,5 +145,181 @@ final class User extends Model
     private function usernameTaken(string $username): bool
     {
         return $this->selectOne('SELECT id FROM users WHERE username = ? LIMIT 1', [$username]) !== null;
+    }
+
+    public function find(int $id): ?array
+    {
+        return $this->selectOne('SELECT * FROM users WHERE id = ? LIMIT 1', [$id]);
+    }
+
+    public function findByUsername(string $username): ?array
+    {
+        return $this->selectOne('SELECT * FROM users WHERE username = ? LIMIT 1', [$username]);
+    }
+
+    /**
+     * Saves the editable half of a profile.
+     *
+     * Only keys in EDITABLE are written, so an extra field posted by hand is
+     * dropped rather than trusted, and blank values are stored as null so
+     * "unset" is one state in the database rather than two.
+     *
+     * @param array<string, string|null> $fields
+     */
+    public function updateProfile(int $id, array $fields): void
+    {
+        $columns  = [];
+        $bindings = [];
+
+        foreach (self::EDITABLE as $column) {
+            if (!array_key_exists($column, $fields)) {
+                continue;
+            }
+
+            $value = $fields[$column];
+            $value = $value === null ? null : trim($value);
+
+            $columns[]  = $column . ' = ?';
+            $bindings[] = ($value === null || $value === '') ? null : $value;
+        }
+
+        if ($columns === []) {
+            return;
+        }
+
+        $bindings[] = $id;
+
+        $this->execute('UPDATE users SET ' . implode(', ', $columns) . ' WHERE id = ?', $bindings);
+    }
+
+    /**
+     * Points the avatar at an uploaded file, deleting whichever file it replaces
+     * so the directory does not fill up with orphans.
+     */
+    public function setUploadedAvatar(int $id, string $fileName): void
+    {
+        $current = $this->find($id);
+
+        $this->execute(
+            'UPDATE users SET avatar_path = ?, avatar_source = ? WHERE id = ?',
+            [$fileName, self::AVATAR_UPLOAD, $id]
+        );
+
+        if ($current !== null && ($current['avatar_path'] ?? null) !== null) {
+            Avatar::delete((string) $current['avatar_path']);
+        }
+    }
+
+    /**
+     * Switches between an already-uploaded picture, the Google one and initials
+     * without discarding the other. Someone who tries Google and changes their
+     * mind should get their upload back rather than have to find the file again.
+     */
+    public function setAvatarSource(int $id, string $source): void
+    {
+        $this->execute('UPDATE users SET avatar_source = ? WHERE id = ?', [$source, $id]);
+    }
+
+    public function removeAvatar(int $id): void
+    {
+        $current = $this->find($id);
+
+        $this->execute(
+            'UPDATE users SET avatar_path = NULL, avatar_source = ? WHERE id = ?',
+            [self::AVATAR_INITIALS, $id]
+        );
+
+        if ($current !== null && ($current['avatar_path'] ?? null) !== null) {
+            Avatar::delete((string) $current['avatar_path']);
+        }
+    }
+
+    /** Remembers the picture Google supplies, so it can be chosen later. */
+    public function setGoogleAvatar(int $id, string $url): void
+    {
+        $this->execute('UPDATE users SET google_avatar = ? WHERE id = ?', [$url, $id]);
+    }
+
+    public function setPassword(int $id, string $password): void
+    {
+        $this->execute(
+            'UPDATE users SET password = ? WHERE id = ?',
+            [password_hash($password, PASSWORD_DEFAULT), $id]
+        );
+    }
+
+    /**
+     * Deletes the account and everything on it.
+     *
+     * Articles go first: blogPost.user_id has no cascade behind it, so leaving
+     * them would leave rows pointing at an author who no longer exists, and
+     * every listing joins users to render a byline.
+     */
+    public function deleteAccount(int $id): void
+    {
+        $user = $this->find($id);
+
+        $this->execute('DELETE FROM blogPost WHERE user_id = ?', [$id]);
+        $this->execute('DELETE FROM users WHERE id = ?', [$id]);
+
+        if ($user !== null && ($user['avatar_path'] ?? null) !== null) {
+            Avatar::delete((string) $user['avatar_path']);
+        }
+    }
+
+    /**
+     * The name to show for a user, falling back to the username.
+     *
+     * @param array<string, mixed> $user
+     */
+    public static function nameFor(array $user): string
+    {
+        $display = trim((string) ($user['display_name'] ?? ''));
+
+        return $display === '' ? (string) ($user['username'] ?? '') : $display;
+    }
+
+    /**
+     * The picture to show, or null when initials should be drawn instead.
+     *
+     * @param array<string, mixed> $user
+     */
+    public static function avatarFor(array $user): ?string
+    {
+        $source = (string) ($user['avatar_source'] ?? self::AVATAR_INITIALS);
+
+        if ($source === self::AVATAR_UPLOAD) {
+            $path = trim((string) ($user['avatar_path'] ?? ''));
+
+            return $path === '' ? null : Avatar::url($path);
+        }
+
+        if ($source === self::AVATAR_GOOGLE) {
+            $remote = trim((string) ($user['google_avatar'] ?? ''));
+
+            return $remote === '' ? null : $remote;
+        }
+
+        return null;
+    }
+
+    /**
+     * The topics a writer says they cover, filtered against the configured
+     * categories so a stale or hand-posted value cannot render.
+     *
+     * @param  array<string, mixed> $user
+     * @return list<string>
+     */
+    public static function interestsFor(array $user): array
+    {
+        $raw = trim((string) ($user['interests'] ?? ''));
+
+        if ($raw === '') {
+            return [];
+        }
+
+        $chosen = array_map('trim', explode(',', $raw));
+
+        return array_values(array_intersect(Post::categories(), $chosen));
     }
 }

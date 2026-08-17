@@ -5,6 +5,7 @@ use App\Core\Csrf;
 use App\Core\Html;
 use App\Core\View;
 use App\Models\Post;
+use App\Models\User;
 
 /**
  * The writing screen, shared by "new article" and "edit article".
@@ -32,6 +33,9 @@ $body    = ($post['content_format'] ?? 'html') === 'html'
 
 $words   = (int) ($post['word_count'] ?? 0) ?: Html::wordCount($body);
 $minutes = (int) ($post['reading_minutes'] ?? 0) ?: Html::readingMinutes($words);
+
+// Whoever is writing is the author the preview should show
+$author = Auth::user() ?? [];
 ?>
 <form class="editor" id="editorForm" method="POST" action="<?= e($action) ?>"
       data-post-id="<?= $postId ?>"
@@ -165,8 +169,11 @@ $minutes = (int) ($post['reading_minutes'] ?? 0) ?: Html::readingMinutes($words)
                     <p class="article-standfirst" id="previewSubtitle" hidden></p>
 
                     <div class="byline">
-                        <span class="avatar"><?= e(mb_substr((string) Auth::username(), 0, 2)) ?></span>
-                        <span class="author"><?= e(Auth::username()) ?></span>
+                        <?php /* The preview is meant to look like the published
+                                 article, so it uses the same byline the reader
+                                 will get, picture and display name included. */ ?>
+                        <?php View::partial('partials/_avatar', ['user' => $author, 'size' => 'md']); ?>
+                        <span class="author"><?= e(User::nameFor($author)) ?></span>
                         <span class="sep">&middot;</span>
                         <span><?= e(date('M j, Y')) ?></span>
                         <span class="sep">&middot;</span>

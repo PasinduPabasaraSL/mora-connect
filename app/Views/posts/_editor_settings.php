@@ -2,6 +2,7 @@
 
 use App\Core\Auth;
 use App\Models\Post;
+use App\Models\User;
 
 /**
  * Article settings, which double as the publish confirmation.
@@ -114,7 +115,7 @@ $cover    = trim((string) ($post['image_url'] ?? ''));
                         <h3>This article</h3>
                         <ul class="panel-list stat-list">
                             <li><span>Status</span><span class="count"><?= $published ? 'Published' : 'Draft' ?></span></li>
-                            <li><span>Author</span><span class="count"><?= e(Auth::username()) ?></span></li>
+                            <li><span>Author</span><span class="count"><?= e(User::nameFor(Auth::user() ?? [])) ?></span></li>
                             <li><span>Words</span><span class="count" id="statWords"><?= $words ?></span></li>
                             <li><span>Characters</span><span class="count" id="statChars">0</span></li>
                             <li><span>Reading time</span><span class="count" id="statMinutes"><?= $minutes ?> min</span></li>

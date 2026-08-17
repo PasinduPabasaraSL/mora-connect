@@ -7,8 +7,119 @@ document.addEventListener('DOMContentLoaded', function () {
     setupConfirmDialog();
     setupToasts();
     setupDocNav();
+    setupTabs();
+    setupAvatarPreview();
+    setupTypedConfirm();
     window.MoraHighlight(document);
 });
+
+/**
+ * Tabs on the profile page. Without JavaScript both panels are simply visible
+ * one after the other, which is a worse layout but not a broken one.
+ */
+function setupTabs() {
+    var tabs = document.querySelectorAll('.tab[data-tab]');
+
+    if (!tabs.length) {
+        return;
+    }
+
+    var panels = document.querySelectorAll('.tab-panel[data-panel]');
+
+    function show(name) {
+        tabs.forEach(function (tab) {
+            var active = tab.dataset.tab === name;
+
+            tab.classList.toggle('is-active', active);
+            tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+
+        panels.forEach(function (panel) {
+            panel.hidden = panel.dataset.panel !== name;
+        });
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            show(tab.dataset.tab);
+        });
+
+        // Left and right arrows move between tabs, as a tablist should
+        tab.addEventListener('keydown', function (event) {
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+                return;
+            }
+
+            var list = Array.prototype.slice.call(tabs);
+            var next = list[list.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : -1)];
+
+            if (next) {
+                event.preventDefault();
+                next.focus();
+                show(next.dataset.tab);
+            }
+        });
+    });
+}
+
+/**
+ * Shows the chosen file in place of the current profile picture, so nobody has
+ * to save and reload to find out they picked the wrong one.
+ */
+function setupAvatarPreview() {
+    var input = document.getElementById('avatar');
+    var frame = document.querySelector('.avatar-preview');
+
+    if (!input || !frame || !window.FileReader) {
+        return;
+    }
+
+    input.addEventListener('change', function () {
+        var file = input.files && input.files[0];
+
+        if (!file || file.type.indexOf('image/') !== 0) {
+            return;
+        }
+
+        var reader = new FileReader();
+
+        reader.onload = function () {
+            var img = frame.querySelector('img');
+
+            if (!img) {
+                img = document.createElement('img');
+                img.alt = '';
+                frame.appendChild(img);
+            }
+
+            img.src = reader.result;
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+/**
+ * Keeps a destructive button disabled until the exact word has been typed. The
+ * server checks the same thing; this only stops the button being hit by reflex.
+ */
+function setupTypedConfirm() {
+    document.querySelectorAll('[data-confirm-match]').forEach(function (input) {
+        var form = input.closest('form');
+        var button = form && form.querySelector('[data-confirm-submit]');
+
+        if (!button) {
+            return;
+        }
+
+        function check() {
+            button.disabled = input.value.trim() !== input.dataset.confirmMatch;
+        }
+
+        input.addEventListener('input', check);
+        check();
+    });
+}
 
 /**
  * Marks the section a reader is currently in, in the contents list of a prose

@@ -22,11 +22,30 @@ USE moraconnect;
 -- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
+    -- Identifies the account and appears in author URLs, so it can never change
     username VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
     google_id VARCHAR(64) NULL UNIQUE,   -- Google's subject id, set for accounts that sign in with Google
     password VARCHAR(255) NULL,          -- password_hash() output, never plain text; null for Google-only accounts
     role VARCHAR(50) NOT NULL DEFAULT 'student',
+
+    -- Profile. All optional: an account works with none of it filled in.
+    display_name VARCHAR(80) NULL,       -- shown on bylines in place of the username
+    headline VARCHAR(160) NULL,
+    bio VARCHAR(600) NULL,
+    faculty VARCHAR(120) NULL,
+    programme VARCHAR(120) NULL,
+    study_year VARCHAR(24) NULL,
+    website VARCHAR(255) NULL,
+    github VARCHAR(64) NULL,             -- username only, printed into a github.com URL
+    linkedin VARCHAR(255) NULL,
+    interests VARCHAR(255) NULL,         -- comma-separated category names
+
+    -- Avatar. Both sources are kept so switching between them is reversible.
+    avatar_path VARCHAR(160) NULL,       -- file in uploads/avatars, owned by this server
+    google_avatar VARCHAR(600) NULL,     -- URL owned by Google
+    avatar_source VARCHAR(12) NOT NULL DEFAULT 'initials',  -- upload | google | initials
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

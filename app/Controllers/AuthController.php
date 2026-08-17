@@ -230,13 +230,29 @@ final class AuthController extends Controller
         }
 
         if ($user !== null) {
+            // Refreshed on every sign-in, because people change it
+            if ($profile['picture'] !== '') {
+                $users->setGoogleAvatar((int) $user['id'], $profile['picture']);
+            }
+
             Auth::login($user);
-            Session::flash('success', 'Signed in as ' . $user['username'] . '.');
+            Session::flash('success', 'Signed in as ' . User::nameFor($user) . '.');
             $this->redirect();
         }
 
         $username = $users->uniqueUsername($profile['name'], $profile['email']);
         $id       = $users->createFromGoogle($username, $profile['email'], $profile['sub']);
+
+        // A new account starts with the Google picture already showing, since
+        // they have one and an empty profile is a worse first impression.
+        if ($profile['picture'] !== '') {
+            $users->setGoogleAvatar($id, $profile['picture']);
+            $users->setAvatarSource($id, User::AVATAR_GOOGLE);
+        }
+
+        if ($profile['name'] !== '') {
+            $users->updateProfile($id, ['display_name' => $profile['name']]);
+        }
 
         Auth::login([
             'id'       => $id,

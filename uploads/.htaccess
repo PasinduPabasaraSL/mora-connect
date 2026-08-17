@@ -1,0 +1,33 @@
+# This directory holds files the public uploaded, so the one thing that must
+# never happen here is execution. An avatar Apache is willing to run as PHP is a
+# way to run arbitrary code on the server, and the file extension is not a
+# trustworthy guard on its own.
+#
+# Every php_flag is wrapped: on a server running PHP through FastCGI rather than
+# mod_php the directive does not exist, and an unwrapped one would fail the whole
+# directory with a 500 instead of protecting it.
+
+<IfModule mod_php.c>
+    php_admin_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_admin_flag engine off
+</IfModule>
+<IfModule mod_php5.c>
+    php_admin_flag engine off
+</IfModule>
+
+# Belt and braces for the FastCGI case, where the flags above do nothing: strip
+# the handlers that would run a file, and serve anything script-shaped as text.
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .phps .cgi .pl .py .shtml
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .phps
+AddType text/plain .php .phtml .php3 .php4 .php5 .php7 .phps .cgi .pl .py .shtml
+
+# Uploaded files are served straight off disk and never belong to the router
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^ - [L]
+</IfModule>
+
+# Nothing in here is ever meant to be run as CGI either
+Options -ExecCGI -Indexes

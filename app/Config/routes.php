@@ -24,6 +24,14 @@ return static function (Router $router): void {
 
     $router->get('/profile', 'ProfileController@index');
 
+    $router->get('/settings', 'SettingsController@edit');
+    $router->post('/settings/profile', 'SettingsController@updateProfile');
+    $router->post('/settings/avatar', 'SettingsController@updateAvatar');
+    $router->post('/settings/password', 'SettingsController@updatePassword');
+    $router->post('/settings/delete', 'SettingsController@destroy');
+
+    $router->get('/authors/{username}', 'AuthorController@show');
+
     $router->get('/topics/{slug}', 'TopicController@show');
 
     // Posts

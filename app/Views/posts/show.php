@@ -5,6 +5,7 @@ use App\Core\Csrf;
 use App\Core\Html;
 use App\Core\View;
 use App\Models\Post;
+use App\Models\User;
 
 /**
  * @var array<string, mixed>             $post
@@ -34,7 +35,8 @@ $bodyHtml = $isHtml
 $minutes = (int) ($post['reading_minutes'] ?? 0)
     ?: Html::readingMinutes(Html::wordCount($bodyHtml));
 
-$shownAt = $post['published_at'] ?? $post['created_at'];
+$shownAt   = $post['published_at'] ?? $post['created_at'];
+$authorUrl = url('authors/' . rawurlencode((string) $post['username']));
 ?>
 <?php if ($isOwner && ($isDraft || $isPreview)): ?>
     <?php /* The author needs to know at a glance that nobody else can see this
@@ -75,8 +77,10 @@ $shownAt = $post['published_at'] ?? $post['created_at'];
             <?php endif; ?>
 
             <div class="byline">
-                <span class="avatar"><?= e(mb_substr((string) $post['username'], 0, 2)) ?></span>
-                <span class="author"><?= e($post['username']) ?></span>
+                <a class="byline-author" href="<?= e($authorUrl) ?>">
+                    <?php View::partial('partials/_avatar', ['user' => $post, 'size' => 'md']); ?>
+                    <span class="author"><?= e(User::nameFor($post)) ?></span>
+                </a>
                 <span class="sep">&middot;</span>
                 <span><?= e(format_date($shownAt)) ?></span>
                 <span class="sep">&middot;</span>
@@ -124,10 +128,10 @@ $shownAt = $post['published_at'] ?? $post['created_at'];
     <aside class="article-rail">
         <div class="panel">
             <h3>Written by</h3>
-            <div class="byline" style="margin-bottom: var(--s2);">
-                <span class="avatar"><?= e(mb_substr((string) $post['username'], 0, 2)) ?></span>
-                <span class="author"><?= e($post['username']) ?></span>
-            </div>
+            <a class="byline byline-author rail-author" href="<?= e($authorUrl) ?>">
+                <?php View::partial('partials/_avatar', ['user' => $post, 'size' => 'lg']); ?>
+                <span class="author"><?= e(User::nameFor($post)) ?></span>
+            </a>
             <p><?= $isDraft ? 'Drafted' : 'Published' ?> <?= e(format_date($shownAt)) ?> under
                 <a class="link" href="<?= e(url('topics/' . Post::slugFor($category))) ?>"><?= e($category) ?></a>.</p>
             <p class="mono article-meta"><?= (int) ($post['word_count'] ?? 0) ?> words &middot; <?= $minutes ?> min read</p>

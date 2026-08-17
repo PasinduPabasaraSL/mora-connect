@@ -18,6 +18,13 @@ final class Post extends Model
     private const LISTABLE = "blogPost.status = 'published' AND blogPost.visibility = 'public'";
 
     /**
+     * The author columns every byline needs. Named once so adding something to a
+     * byline is one edit rather than one per query.
+     */
+    private const AUTHOR = 'users.username, users.display_name,
+                             users.avatar_path, users.google_avatar, users.avatar_source';
+
+    /**
      * Columns the editor owns. Used to build INSERT and UPDATE statements from
      * one array so adding a field does not mean editing three method
      * signatures.
@@ -153,7 +160,7 @@ final class Post extends Model
     public function allWithAuthor(): array
     {
         return $this->select(
-            'SELECT blogPost.*, users.username
+            'SELECT blogPost.*, ' . self::AUTHOR . '
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
              WHERE ' . self::LISTABLE . '
@@ -164,7 +171,7 @@ final class Post extends Model
     public function byCategory(string $category): array
     {
         return $this->select(
-            'SELECT blogPost.*, users.username
+            'SELECT blogPost.*, ' . self::AUTHOR . '
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
              WHERE blogPost.category = ? AND ' . self::LISTABLE . '
@@ -176,7 +183,7 @@ final class Post extends Model
     public function related(string $category, int $excludeId, int $limit = 3): array
     {
         return $this->select(
-            'SELECT blogPost.*, users.username
+            'SELECT blogPost.*, ' . self::AUTHOR . '
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
              WHERE blogPost.category = ? AND blogPost.id <> ? AND ' . self::LISTABLE . '
@@ -191,7 +198,7 @@ final class Post extends Model
         $like = '%' . addcslashes($term, '%_\\') . '%';
 
         return $this->select(
-            'SELECT blogPost.*, users.username
+            'SELECT blogPost.*, ' . self::AUTHOR . '
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
              WHERE (blogPost.title LIKE ? OR blogPost.subtitle LIKE ?
@@ -206,7 +213,7 @@ final class Post extends Model
     public function findWithAuthor(int $id): ?array
     {
         return $this->selectOne(
-            'SELECT blogPost.*, users.username
+            'SELECT blogPost.*, ' . self::AUTHOR . '
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
              WHERE blogPost.id = ?',
@@ -217,7 +224,7 @@ final class Post extends Model
     public function findBySlugWithAuthor(string $slug): ?array
     {
         return $this->selectOne(
-            'SELECT blogPost.*, users.username
+            'SELECT blogPost.*, ' . self::AUTHOR . '
              FROM blogPost
              JOIN users ON blogPost.user_id = users.id
              WHERE blogPost.slug = ?',
@@ -238,6 +245,46 @@ final class Post extends Model
               ORDER BY status = 'published', updated_at DESC",
             [$userId]
         );
+    }
+
+    /**
+     * One author's articles as a visitor sees them: published, public, newest
+     * first. Drafts and unlisted articles are the author's own business and are
+     * only ever reachable from their profile.
+     */
+    public function publishedByUser(int $userId): array
+    {
+        return $this->select(
+            'SELECT blogPost.*, ' . self::AUTHOR . '
+             FROM blogPost
+             JOIN users ON blogPost.user_id = users.id
+             WHERE blogPost.user_id = ? AND ' . self::LISTABLE . '
+             ORDER BY COALESCE(blogPost.published_at, blogPost.created_at) DESC',
+            [$userId]
+        );
+    }
+
+    /**
+     * Totals for one author's public work, for the header of their page.
+     *
+     * @return array{articles: int, words: int, topics: int}
+     */
+    public function statsForUser(int $userId): array
+    {
+        $row = $this->selectOne(
+            'SELECT COUNT(*) AS articles,
+                    COALESCE(SUM(word_count), 0) AS words,
+                    COUNT(DISTINCT category) AS topics
+             FROM blogPost
+             WHERE user_id = ? AND ' . self::LISTABLE,
+            [$userId]
+        ) ?? [];
+
+        return [
+            'articles' => (int) ($row['articles'] ?? 0),
+            'words'    => (int) ($row['words'] ?? 0),
+            'topics'   => (int) ($row['topics'] ?? 0),
+        ];
     }
 
     /**

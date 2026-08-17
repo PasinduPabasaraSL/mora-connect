@@ -10,7 +10,8 @@
    5  Header & nav           11  Footer & errors
    6  Buttons & badges       12  Editor
                             13  Prose pages
-                            14  Responsive
+                            14  Profiles & settings
+                            15  Responsive
    ========================================================= */
 
 /* ---------- 1. Tokens (light) ---------- */
@@ -374,23 +375,18 @@ p { margin: 0 0 var(--s2); }
   color: var(--ink-soft);
 }
 .avatar-btn:hover { border-color: var(--border-firm); background: var(--surface-alt); }
-.avatar-btn .avatar {
-  width: 27px;
-  height: 27px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient(140deg, var(--accent), var(--accent-strong));
-  color: var(--accent-ink);
-  flex-shrink: 0;
-}
+/* Slightly larger than .avatar-sm elsewhere, to fill the pill it sits in */
+.avatar-btn .avatar { width: 27px; height: 27px; font-size: 11px; }
 .avatar-btn .avatar-label {
   font-size: 12px;
   font-weight: 600;
-  text-transform: lowercase;
   letter-spacing: 0.02em;
   color: var(--ink);
+  /* A long display name cannot be allowed to push the nav around */
+  max-width: 13ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .menu { min-width: 208px; padding: 7px; }
@@ -903,20 +899,45 @@ a.stat:hover .label { color: var(--accent-text); }
 .article-head h1 { margin: var(--s2) 0; }
 
 .byline { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: var(--fs-small); color: var(--ink-soft); }
-.byline .avatar {
-  width: 34px;
-  height: 34px;
+.byline .author { font-weight: 600; color: var(--ink); }
+
+/* A byline that leads to the writer's page */
+.byline-author { display: inline-flex; align-items: center; gap: 10px; }
+.byline-author:hover .author { color: var(--accent-text); }
+.rail-author { margin-bottom: var(--s2); }
+
+/* ---------- Avatars ----------
+   One element for every profile picture on the site. The initials sit underneath
+   the image rather than instead of it, so a picture that fails to load reveals
+   them without any script having to notice. */
+.avatar {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
+  overflow: hidden;
   border-radius: 50%;
   background: linear-gradient(140deg, var(--accent), var(--accent-strong));
   color: #fff;
-  font-size: var(--fs-micro);
   font-weight: 600;
   text-transform: uppercase;
+  line-height: 1;
 }
-.byline .author { font-weight: 600; color: var(--ink); }
+.avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.avatar-initials { letter-spacing: 0.01em; }
+
+.avatar-sm { width: 26px; height: 26px; font-size: 10.5px; }
+.avatar-md { width: 34px; height: 34px; font-size: var(--fs-micro); }
+.avatar-lg { width: 46px; height: 46px; font-size: 15px; }
+.avatar-xl { width: 104px; height: 104px; font-size: 34px; }
 
 /* The standfirst carries the subtitle: larger than body text, lighter than the
    title, and the first thing a reader uses to decide whether to continue. */
@@ -1915,7 +1936,140 @@ textarea.sheet-textarea { min-height: 0; }
   .faq summary::after { transition: none; }
 }
 
-/* ---------- 14. Responsive ---------- */
+/* ---------- 14. Profiles & settings ---------- */
+/* Cover band with the avatar overlapping its lower edge. */
+.profile-head { margin-bottom: var(--s4); }
+.profile-cover {
+  height: 148px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  /* Tinted from the accent rather than an uploaded image, so a profile looks
+     finished the moment it is created */
+  background:
+    radial-gradient(120% 160% at 12% 0%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 62%),
+    radial-gradient(90% 140% at 92% 10%, color-mix(in srgb, var(--accent-strong) 18%, transparent), transparent 60%),
+    var(--surface-alt);
+}
+
+.profile-identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--s3);
+  align-items: end;
+  /* Lifts the row so the avatar straddles the cover's edge */
+  margin-top: -52px;
+  padding: 0 var(--s3);
+}
+.profile-avatar {
+  border: 4px solid var(--surface);
+  box-shadow: var(--shadow-md);
+}
+.profile-details { padding-bottom: 4px; }
+.profile-details h1 { font-size: clamp(24px, 3vw, 32px); margin: 0; }
+.profile-handle {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+  margin: 2px 0 0;
+}
+.profile-headline { font-size: var(--fs-body); color: var(--ink); margin: 10px 0 0; }
+.profile-academic { font-size: var(--fs-small); color: var(--ink-soft); margin: 5px 0 0; }
+.profile-bio { font-size: var(--fs-small); color: var(--ink-soft); margin: 10px 0 0; max-width: 68ch; }
+
+.profile-links { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: 12px; }
+.profile-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.profile-links a:hover { color: var(--accent-text); }
+
+.profile-interests { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+
+.profile-actions { display: flex; flex-wrap: wrap; gap: var(--s1); padding-bottom: 4px; }
+.profile-stats { margin-top: var(--s3); }
+
+.profile-note {
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+  padding: 11px var(--s3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  margin-bottom: var(--s3);
+}
+
+.author-articles { margin-top: var(--s5); }
+
+/* ----- Tabs ----- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--s3);
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border: 0;
+  background: none;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--ink-faint);
+  /* Sits on the container's border so the active tab appears joined to its panel */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--ink); }
+.tab.is-active { color: var(--ink); border-bottom-color: var(--accent); }
+.tab:focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
+.tab-count {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--ink-soft);
+}
+.tab.is-active .tab-count { background: var(--accent-tint); border-color: var(--accent); color: var(--accent-text); }
+
+/* ----- Settings ----- */
+.settings-section { padding-top: var(--s4); border-top: 1px solid var(--border); margin-top: var(--s4); scroll-margin-top: 96px; }
+.settings-section:first-of-type { border-top: 0; margin-top: var(--s2); padding-top: 0; }
+.settings-section h2 { font-size: 20px; margin-bottom: var(--s2); }
+.settings-section > p { font-size: var(--fs-small); color: var(--ink-soft); margin-bottom: var(--s2); }
+.settings-save { padding-top: var(--s3); }
+
+/* Two fields per row where both are short, one where the screen is narrow */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+.form-row .form-group { margin-bottom: 0; }
+.form-row + .form-group { margin-top: var(--s3); }
+
+/* A disabled field still has to be readable — it is showing a real value */
+.form-control:disabled {
+  background: var(--surface-alt);
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px; }
+
+.avatar-editor { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s3); align-items: start; }
+.avatar-preview { border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.avatar-controls .form-group:last-of-type { margin-bottom: var(--s2); }
+
+/* The one destructive section on the page, marked as such without shouting */
+.danger-zone { border-top-color: var(--danger); }
+.danger-zone h2 { color: var(--danger); }
+
+/* ---------- 15. Responsive ---------- */
 @media (max-width: 1100px) {
   .article-layout { grid-template-columns: 1fr; }
   .article-rail { position: static; }
@@ -1943,9 +2097,23 @@ textarea.sheet-textarea { min-height: 0; }
   .tech-field { display: none; }
 }
 
+@media (max-width: 860px) {
+  /* The identity row stacks: name and bio need the full width before the
+     avatar and the buttons need to share a line with them. */
+  .profile-identity { grid-template-columns: 1fr; gap: var(--s2); align-items: start; }
+  .profile-actions { padding-bottom: 0; }
+  .avatar-editor { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 768px) {
   /* Links, mega menu and inline search all move into the drawer */
   .nav-links, .search-inline { display: none; }
+  /* The label is the first thing to go: the picture identifies the account */
+  .avatar-btn .avatar-label { display: none; }
+  .profile-cover { height: 108px; }
+  .profile-identity { margin-top: -40px; padding: 0; }
+  .avatar-xl { width: 78px; height: 78px; font-size: 26px; }
   .nav-toggle { display: flex; }
   /* Duplicated in the mobile drawer, so hide from the top bar to save room */
   .hide-sm { display: none; }

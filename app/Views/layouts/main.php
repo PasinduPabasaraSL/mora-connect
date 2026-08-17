@@ -5,6 +5,7 @@ use App\Core\Csrf;
 use App\Core\Session;
 use App\Core\View;
 use App\Models\Post;
+use App\Models\User;
 
 /** @var string $content */
 /** @var string $title */
@@ -13,6 +14,11 @@ use App\Models\Post;
 
 $scripts   = $scripts ?? [];
 $bodyClass = $bodyClass ?? '';
+
+// The whole row, so the header can show a real picture and a display name. Read
+// once per request; Auth caches it.
+$currentUser = Auth::user() ?? [];
+$currentName = $currentUser === [] ? '' : User::nameFor($currentUser);
 
 $successFlash = Session::pullFlash('success');
 $errorFlash   = Session::pullFlash('error');
@@ -135,15 +141,9 @@ $isRadar  = str_contains($path, '/radar');
 
                     <div class="dropdown hide-sm">
                         <button type="button" class="avatar-btn" data-dropdown aria-expanded="false" aria-haspopup="true"
-                                aria-label="Account menu for <?= e(Auth::username()) ?>">
-                            <span class="avatar">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M20 21a8 8 0 0 0-16 0"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
-                            </span>
-                            <span class="avatar-label"><?= e(mb_substr((string) Auth::username(), 0, 2)) ?></span>
+                                aria-label="Account menu for <?= e($currentName) ?>">
+                            <?php View::partial('partials/_avatar', ['user' => $currentUser, 'size' => 'sm']); ?>
+                            <span class="avatar-label"><?= e($currentName) ?></span>
                             <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"
                                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M6 9l6 6 6-6"></path>
@@ -152,10 +152,12 @@ $isRadar  = str_contains($path, '/radar');
 
                         <div class="dropdown-panel menu">
                             <div class="menu-head">
-                                <strong><?= e(Auth::username()) ?></strong>
-                                <span>Signed in</span>
+                                <strong><?= e($currentName) ?></strong>
+                                <span>@<?= e((string) ($currentUser['username'] ?? '')) ?></span>
                             </div>
                             <a href="<?= e(url('profile')) ?>">Your articles</a>
+                            <a href="<?= e(url('authors/' . rawurlencode((string) ($currentUser['username'] ?? '')))) ?>">Public profile</a>
+                            <a href="<?= e(url('settings')) ?>">Profile settings</a>
                             <a href="<?= e(url('posts/create')) ?>">Write an article</a>
                             <div class="menu-sep"></div>
                             <form method="POST" action="<?= e(url('logout')) ?>">
@@ -200,6 +202,7 @@ $isRadar  = str_contains($path, '/radar');
         <?php if (Auth::check()): ?>
             <a href="<?= e(url('posts/create')) ?>" class="btn btn-primary">Write an article</a>
             <a href="<?= e(url('profile')) ?>" class="btn">Your articles</a>
+            <a href="<?= e(url('settings')) ?>" class="btn">Profile settings</a>
             <form method="POST" action="<?= e(url('logout')) ?>">
                 <?= Csrf::field() ?>
                 <button type="submit" class="btn btn-block">Log out</button>

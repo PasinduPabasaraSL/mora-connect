@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 use App\Core\Env;
 
-/**
- * Anything secret is read from .env, which git ignores. The defaults below are
- * the XAMPP ones, so a fresh checkout still runs without a .env file — but a
- * real password or client secret must never be typed into this file, because
- * this file is committed.
- */
 return [
     'name'  => 'MoraConnect',
 
@@ -23,11 +17,6 @@ return [
         'charset' => 'utf8mb4',
     ],
 
-    /**
-     * Google sign-in. With no client id configured the buttons are hidden and
-     * the routes refuse, so a checkout without credentials behaves as though
-     * the feature does not exist rather than erroring.
-     */
     'google' => [
         'client_id'     => Env::get('GOOGLE_CLIENT_ID'),
         'client_secret' => Env::get('GOOGLE_CLIENT_SECRET'),
@@ -35,11 +24,6 @@ return [
         'redirect_uri'  => Env::get('GOOGLE_REDIRECT_URI', 'http://localhost/Blog/google-callback.php'),
     ],
 
-    /**
-     * Column headings for the Topics menu in the header. Any category missing
-     * from this map still appears, grouped under "More" — so adding a category
-     * below can never make it disappear from the menu.
-     */
     'topic_groups' => [
         'Build'          => ['Web Development', 'Mobile'],
         'Run and deploy' => ['DevOps', 'Systems', 'Databases'],

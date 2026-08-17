@@ -14,8 +14,16 @@ final class ProfileController extends Controller
     {
         $this->requireLogin();
 
+        $user = Auth::user();
+
+        if ($user === null) {
+            $this->redirect('login');
+        }
+
         $this->view('profile/index', [
-            'title' => Auth::username() . ' - MoraConnect',
+            'title' => 'Your profile',
+            'user'  => $user,
+            // Everything, drafts included: this is the author's own page
             'posts' => (new Post())->forUser((int) Auth::id()),
         ]);
     }

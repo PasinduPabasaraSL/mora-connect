@@ -2,6 +2,7 @@
 
 use App\Core\Auth;
 use App\Core\View;
+use App\Models\User;
 
 /**
  * @var array<int, array<string, mixed>> $posts
@@ -85,8 +86,10 @@ $rest = array_slice($posts, 1);
                     <p class="excerpt"><?= e(post_summary($lead, 200)) ?></p>
 
                     <div class="byline">
-                        <span class="avatar"><?= e(mb_substr((string) $lead['username'], 0, 2)) ?></span>
-                        <span class="author"><?= e($lead['username']) ?></span>
+                        <a class="byline-author" href="<?= e(url('authors/' . rawurlencode((string) $lead['username']))) ?>">
+                            <?php View::partial('partials/_avatar', ['user' => $lead, 'size' => 'md']); ?>
+                            <span class="author"><?= e(User::nameFor($lead)) ?></span>
+                        </a>
                         <span class="sep">&middot;</span>
                         <span><?= e(post_minutes($lead)) ?></span>
                     </div>

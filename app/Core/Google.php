@@ -93,7 +93,7 @@ final class Google
      * unverified address must not be trusted, because accounts here are matched
      * by email — accepting one would be a way to claim somebody else's account.
      *
-     * @return array{sub: string, email: string, name: string}|null
+     * @return array{sub: string, email: string, name: string, picture: string}|null
      */
     public static function fetchUser(string $accessToken): ?array
     {
@@ -111,10 +111,40 @@ final class Google
         }
 
         return [
-            'sub'   => $sub,
-            'email' => strtolower($email),
-            'name'  => is_string($profile['name'] ?? null) ? $profile['name'] : '',
+            'sub'     => $sub,
+            'email'   => strtolower($email),
+            'name'    => is_string($profile['name'] ?? null) ? $profile['name'] : '',
+            'picture' => self::pictureFrom($profile),
         ];
+    }
+
+    /**
+     * Google's avatar URL, kept only if it really is one of theirs.
+     *
+     * The value ends up in an <img src>, and pinning it to Google's own hosts
+     * means a changed API response can never turn the profile page into a
+     * request to somewhere else.
+     *
+     * @param array<string, mixed> $profile
+     */
+    private static function pictureFrom(array $profile): string
+    {
+        $picture = $profile['picture'] ?? null;
+
+        if (!is_string($picture) || $picture === '') {
+            return '';
+        }
+
+        $host = parse_url($picture, PHP_URL_HOST);
+
+        if (!is_string($host)) {
+            return '';
+        }
+
+        $allowed = str_ends_with($host, '.googleusercontent.com')
+            || str_ends_with($host, '.google.com');
+
+        return $allowed && str_starts_with($picture, 'https://') ? $picture : '';
     }
 
     /**
