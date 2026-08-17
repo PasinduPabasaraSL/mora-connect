@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Post;
+use App\Models\RadarPost;
 
 final class PageController extends Controller
 {
@@ -14,6 +15,8 @@ final class PageController extends Controller
         $this->view('pages/about', [
             'title' => 'About',
             'stats' => (new Post())->stats(),
+            'radar' => (new RadarPost())->stats(),
+            'topics' => count(Post::categories()),
         ]);
     }
 }

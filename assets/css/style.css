@@ -9,7 +9,8 @@
    4  Typography             10  Forms & alerts
    5  Header & nav           11  Footer & errors
    6  Buttons & badges       12  Editor
-                            13  Responsive
+                            13  Prose pages
+                            14  Responsive
    ========================================================= */
 
 /* ---------- 1. Tokens (light) ---------- */
@@ -1718,10 +1719,210 @@ textarea.sheet-textarea { min-height: 0; }
 .preview-scroll { flex: 1; overflow-y: auto; padding: var(--s5) var(--gutter) var(--s6); }
 .preview-article { max-width: var(--reading); margin: 0 auto; }
 
-/* ---------- 13. Responsive ---------- */
+/* ---------- 13. Prose pages ---------- */
+/* Standing pages such as About. The same two-column shape as an article, but
+   built for a <div> rather than an <article>, so the markup can stay honest
+   about not being one. */
+/* isolation confines the decorative layers below to this element, the same way
+   the hero does it, so a negative z-index cannot fall behind the page. */
+.doc-layout {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--s5);
+  align-items: start;
+}
+/* Centred in its column rather than pinned left: on a wide screen the text is
+   capped well short of the column, and left-aligning it leaves a bare gap
+   between the prose and the rail. */
+.doc-main { min-width: 0; width: 100%; max-width: 72ch; margin: 0 auto; }
+.doc-rail { position: sticky; top: 88px; }
+
+/* The same warm glow the homepage hero has. Without it a standing page reads
+   as a plainer version of the site rather than part of it. */
+.doc-layout::before {
+  content: '';
+  position: absolute;
+  top: -12%;
+  right: -6%;
+  width: min(620px, 46vw);
+  aspect-ratio: 1;
+  background: radial-gradient(circle,
+              color-mix(in srgb, var(--accent) 13%, transparent),
+              transparent 68%);
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Technology marks behind the top of the page. Bleeds past the container
+   gutter to the full width of the window, and fades out before the prose
+   starts so it never competes with body text. */
+.tech-field {
+  position: absolute;
+  top: -40px;
+  left: calc(var(--gutter) * -1);
+  right: calc(var(--gutter) * -1);
+  height: 620px;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.55) 48%, transparent 88%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.55) 48%, transparent 88%);
+}
+.tech-field svg { width: 100%; height: 100%; display: block; }
+
+/* Outlines rather than filled tiles: a background of solid cards would read as
+   content the reader is meant to click. */
+.tech-field .tf-marks rect {
+  fill: var(--surface);
+  stroke: var(--border-firm);
+  stroke-width: 1.3;
+  opacity: 0.5;
+}
+.tech-field .tf-marks use {
+  fill: none;
+  stroke: var(--ink-faint);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+.tech-field .tf-marks text {
+  fill: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-anchor: middle;
+}
+/* A few marks carry the accent so the field is not uniformly grey */
+.tech-field .tf-accent rect { stroke: color-mix(in srgb, var(--accent) 50%, var(--border-firm)); }
+.tech-field .tf-accent text { fill: var(--accent-text); opacity: 0.75; }
+
+.tech-field .tf-threads path {
+  fill: none;
+  stroke: var(--border-firm);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  opacity: 0.5;
+}
+
+.doc-head { padding-bottom: var(--s3); }
+.doc-head h1 { font-size: clamp(30px, 4vw, 42px); margin: 10px 0 var(--s2); max-width: 24ch; }
+/* The opening paragraph is the one a reader decides on, so it gets the same
+   treatment as an article's standfirst. */
+.doc-standfirst { font-size: clamp(17px, 2vw, 20px); line-height: 1.6; color: var(--ink-soft); margin-bottom: var(--s2); }
+.doc-main > .doc-head p:not(.doc-standfirst),
+.doc-section p { color: var(--ink-soft); margin-bottom: var(--s2); }
+.doc-main p:last-child { margin-bottom: 0; }
+
+.doc-stats { margin: var(--s2) 0 var(--s5); }
+
+.doc-section { padding-top: var(--s5); border-top: 1px solid var(--border); margin-top: var(--s5); }
+/* Clears the sticky header when a rail link jumps to a section */
+.doc-section { scroll-margin-top: 96px; }
+.doc-section h2 { font-size: 24px; margin-bottom: var(--s2); }
+.doc-section h3 { font-size: 15px; margin-bottom: 6px; }
+.doc-note { font-size: var(--fs-small); color: var(--ink-faint); }
+
+/* Rail contents. The current section is marked by script.js as the page
+   scrolls; without JavaScript these stay plain links and still work. */
+.doc-nav a { font-weight: 400; color: var(--ink-soft); }
+.doc-nav a:hover { color: var(--accent-text); }
+.doc-nav li.is-current a { font-weight: 600; color: var(--accent-text); }
+
+/* Numbered steps. The counter sits in the margin so the text of every step
+   lines up whether the number is one digit or two. */
+.steps { list-style: none; counter-reset: step; margin-top: var(--s3); }
+.steps > li { counter-increment: step; position: relative; padding: 0 0 var(--s3) 46px; }
+.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: -2px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-tint);
+  border: 1px solid var(--accent);
+  color: var(--accent-text);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+/* A rule joining each number to the next, so the four read as one sequence */
+.steps > li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  bottom: 10px;
+  width: 1px;
+  background: var(--border);
+}
+.steps > li:last-child { padding-bottom: 0; }
+
+/* Specification list, as a publication's colophon. Two columns on a wide
+   screen, label above value once that would leave the values too narrow. */
+.spec { margin-top: var(--s3); border-top: 1px solid var(--border); }
+.spec > div {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: var(--s2);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.spec dt { font-size: var(--fs-small); font-weight: 600; }
+.spec dd { font-size: var(--fs-small); color: var(--ink-soft); }
+
+/* FAQ built on <details>, so it opens and closes with no JavaScript and stays
+   keyboard operable and searchable by the browser's own find. */
+.faq { margin-top: var(--s3); border-top: 1px solid var(--border); }
+.faq details { border-bottom: 1px solid var(--border); }
+.faq summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 14px 0;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.faq summary::-webkit-details-marker { display: none; }
+/* A chevron drawn from a border, rotating a quarter turn when the row opens */
+.faq summary::after {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 2px solid var(--ink-faint);
+  border-bottom: 2px solid var(--ink-faint);
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+.faq details[open] summary::after { transform: rotate(-135deg); }
+.faq summary:hover { color: var(--accent-text); }
+.faq summary:focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
+.faq details p { font-size: var(--fs-small); color: var(--ink-soft); padding: 0 0 var(--s3); max-width: 68ch; }
+
+@media (prefers-reduced-motion: reduce) {
+  .faq summary::after { transition: none; }
+}
+
+/* ---------- 14. Responsive ---------- */
 @media (max-width: 1100px) {
   .article-layout { grid-template-columns: 1fr; }
   .article-rail { position: static; }
+  /* The contents list is only worth its column while it can sit alongside the
+     text; below this it would push the page down before the page begins. */
+  .doc-layout { grid-template-columns: 1fr; }
+  .doc-rail { position: static; order: 2; }
 }
 
 @media (max-width: 960px) {
@@ -1737,6 +1938,9 @@ textarea.sheet-textarea { min-height: 0; }
   /* The diagram is decoration; the headline gets the full width instead */
   .hero-split { grid-template-columns: 1fr; }
   .hero-diagram { display: none; }
+  /* Same reasoning: at this width the marks would be crowding the text they
+     are supposed to be sitting quietly behind. */
+  .tech-field { display: none; }
 }
 
 @media (max-width: 768px) {
@@ -1766,6 +1970,9 @@ textarea.sheet-textarea { min-height: 0; }
   /* Wide images cannot break the measure on a screen that has no margins */
   .article-body figure[data-align="wide"] { width: 100%; margin-left: 0; transform: none; }
   .article-body blockquote { font-size: 18px; padding-left: var(--s2); }
+
+  /* Label above value: side by side would leave the values a few words wide */
+  .spec > div { grid-template-columns: 1fr; gap: 4px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

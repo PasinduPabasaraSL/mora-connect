@@ -6,8 +6,63 @@ document.addEventListener('DOMContentLoaded', function () {
     setupBrokenCovers();
     setupConfirmDialog();
     setupToasts();
+    setupDocNav();
     window.MoraHighlight(document);
 });
+
+/**
+ * Marks the section a reader is currently in, in the contents list of a prose
+ * page such as About. Purely an enhancement: the links are ordinary anchors and
+ * navigate on their own if this never runs.
+ */
+function setupDocNav() {
+    var links = document.querySelectorAll('.doc-nav a[href^="#"]');
+
+    if (!links.length || !window.IntersectionObserver) {
+        return;
+    }
+
+    var items = {};
+    var sections = [];
+
+    links.forEach(function (link) {
+        var section = document.getElementById(link.getAttribute('href').slice(1));
+
+        if (section) {
+            items[section.id] = link.parentElement;
+            sections.push(section);
+        }
+    });
+
+    function mark(id) {
+        Object.keys(items).forEach(function (key) {
+            items[key].classList.toggle('is-current', key === id);
+        });
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+        // Whichever tracked section is nearest the top of the viewport wins, so
+        // that two visible at once do not both light up.
+        var best = null;
+
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting && (best === null || entry.boundingClientRect.top < best.boundingClientRect.top)) {
+                best = entry;
+            }
+        });
+
+        if (best !== null) {
+            mark(best.target.id);
+        }
+    }, {
+        // A band across the upper part of the screen, roughly where the eye is
+        rootMargin: '-88px 0px -65% 0px',
+    });
+
+    sections.forEach(function (section) {
+        observer.observe(section);
+    });
+}
 
 function setupToasts() {
     var LIFETIMES = { success: 4500, error: 8000 };
