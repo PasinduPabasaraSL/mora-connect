@@ -21,8 +21,7 @@ $visibility = ($post['visibility'] ?? Post::VISIBILITY_PUBLIC) === Post::VISIBIL
     ? Post::VISIBILITY_UNLISTED
     : Post::VISIBILITY_PUBLIC;
 
-$comments = (int) ($post['comments_enabled'] ?? 1) === 0 ? 0 : 1;
-$cover    = trim((string) ($post['image_url'] ?? ''));
+$cover = trim((string) ($post['image_url'] ?? ''));
 ?>
 <div class="sheet" id="settingsSheet" hidden>
     <?php /* Clicking the backdrop closes the dialog; it is not focusable, so
@@ -138,19 +137,9 @@ $cover    = trim((string) ($post['image_url'] ?? ''));
                         </label>
                     </div>
 
-                    <div class="form-group">
-                        <span class="field-label">Responses</span>
-
-                        <label class="choice">
-                            <input type="radio" name="comments_enabled" value="1" <?= $comments === 1 ? 'checked' : '' ?>>
-                            <span><strong>Allow comments</strong></span>
-                        </label>
-
-                        <label class="choice">
-                            <input type="radio" name="comments_enabled" value="0" <?= $comments === 0 ? 'checked' : '' ?>>
-                            <span><strong>Turn comments off</strong></span>
-                        </label>
-                    </div>
+                    <?php /* A Responses choice used to sit here, but comments do not
+                             exist yet: it collected a preference, stored it, and
+                             nothing ever read it. It comes back with the feature. */ ?>
                 </div>
             </div>
         </div>

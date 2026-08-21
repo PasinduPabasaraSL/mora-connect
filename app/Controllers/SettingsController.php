@@ -319,8 +319,6 @@ final class SettingsController extends Controller
 
         Auth::logout();
 
-        // logout() destroys the session, so a flash written now would have
-        // nowhere to live. A fresh session carries the goodbye message.
         Session::start();
         Session::flash('success', 'Your account and everything on it has been deleted.');
 

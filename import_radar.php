@@ -13,17 +13,95 @@ declare(strict_types=1);
  * Run from a terminal:
  *     php import_radar.php
  *
+ * Or, on hosting with no shell access, from a browser:
+ *     https://your-site/import_radar.php?key=RADAR_IMPORT_KEY
+ *
+ * The browser route needs RADAR_IMPORT_KEY and RADAR_IMPORT_USER set in .env,
+ * and requires both the key in the URL and a signed-in session belonging to
+ * that username. Leave either setting empty and the browser route is closed.
+ *
  * Safe to run repeatedly: each run replaces the stored selection with a fresh
  * one, so the table never accumulates duplicates or stale picks.
  */
 
 require __DIR__ . '/app/bootstrap.php';
 
+use App\Core\Auth;
+use App\Core\Config;
 use App\Core\Database;
 
-if (PHP_SAPI !== 'cli') {
-    http_response_code(403);
-    exit("This importer is a command line tool. Run: php import_radar.php\n");
+$viaCli = PHP_SAPI === 'cli';
+
+/**
+ * Progress, flushed as it happens so a browser run shows its work rather than
+ * hanging on a blank page for the length of a dozen API calls.
+ */
+function report(string $line): void
+{
+    echo $line;
+
+    if (PHP_SAPI !== 'cli') {
+        flush();
+    }
+}
+
+/**
+ * A failed tag: worth saying, but not worth stopping for. Kept off stdout under
+ * CLI so piping the output stays clean; STDERR does not exist over HTTP.
+ */
+function problem(string $line): void
+{
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, $line);
+
+        return;
+    }
+
+    echo $line;
+    flush();
+}
+
+if (!$viaCli) {
+    header('Content-Type: text/plain; charset=utf-8');
+
+    $key   = (string) Config::get('radar.import_key', '');
+    $owner = (string) Config::get('radar.import_user', '');
+
+    if ($key === '' || $owner === '') {
+        http_response_code(404);
+        exit("The browser importer is switched off. Set RADAR_IMPORT_KEY and RADAR_IMPORT_USER in .env to use it.\n");
+    }
+
+    $given = isset($_GET['key']) ? (string) $_GET['key'] : '';
+
+    // Both guards, so a key that leaks out of a browser history or a server log
+    // is not enough on its own, and neither is someone else's open session.
+    // hash_equals compares in constant time, giving nothing away by how long a
+    // wrong key takes to reject.
+    if ($given === '' || !hash_equals($key, $given)) {
+        http_response_code(403);
+        exit("Not authorised.\n");
+    }
+
+    // Past the key, so whoever this is holds the operator secret. Being specific
+    // now costs nothing and saves guessing which of the two guards refused.
+    if (!Auth::check()) {
+        http_response_code(403);
+        exit("The key is correct, but nobody is signed in.\n\n"
+            . "Sign in as \"" . $owner . "\" in this same browser, then reload this URL.\n");
+    }
+
+    if (Auth::username() !== $owner) {
+        http_response_code(403);
+        exit("The key is correct, but you are signed in as \"" . Auth::username() . "\".\n\n"
+            . "The importer expects \"" . $owner . "\". Either sign in as that account, or set\n"
+            . "RADAR_IMPORT_USER in .env to the username you actually use.\n");
+    }
+
+    // A dozen API calls take longer than a page view is normally allowed, and
+    // the run should finish even if the tab is closed part way through.
+    @set_time_limit(180);
+    ignore_user_abort(true);
 }
 
 /** Total articles wanted across all topics. */
@@ -51,6 +129,9 @@ const TAG_MAP = [
  * Requests one page of articles for a tag. `top=365` asks for the best received
  * articles of the past year, which are far more likely to carry a cover image
  * and a written summary than the newest ones.
+ *
+ * Timeouts are deliberately short. Shared hosting caps how long a request may
+ * run in total, so one slow tag must not eat the budget for the rest.
  */
 function fetchTag(string $tag, int $perPage = 12): array
 {
@@ -63,9 +144,10 @@ function fetchTag(string $tag, int $perPage = 12): array
     $handle = curl_init($url);
     curl_setopt_array($handle, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 25,
+        CURLOPT_CONNECTTIMEOUT => 6,
+        CURLOPT_TIMEOUT        => 12,
         CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_USERAGENT      => 'MoraConnect/1.0 (student project; +http://localhost/Blog)',
+        CURLOPT_USERAGENT      => 'MoraConnect/1.0 (student project; +https://moraconnect.dev)',
         CURLOPT_HTTPHEADER     => ['Accept: application/json'],
     ]);
 
@@ -75,7 +157,7 @@ function fetchTag(string $tag, int $perPage = 12): array
     curl_close($handle);
 
     if ($body === false || $status !== 200) {
-        fwrite(STDERR, sprintf("  ! %s failed (HTTP %d) %s\n", $tag, $status, $error));
+        problem(sprintf("  ! %s failed (HTTP %d) %s\n", $tag, $status, $error));
 
         return [];
     }
@@ -106,7 +188,7 @@ function tidySummary(string $summary, int $limit = 300): string
     return rtrim(mb_substr($clean, 0, $limit), ' .,;:!?-') . '...';
 }
 
-echo "Fetching articles from the dev.to API\n\n";
+report("Fetching articles from the dev.to API\n\n");
 
 $byCategory = [];
 $seenUrls   = [];
@@ -155,11 +237,16 @@ foreach (TAG_MAP as $category => $tags) {
         }
     }
 
-    printf("  %-18s %d article%s\n", $category, $kept, $kept === 1 ? '' : 's');
+    report(sprintf("  %-18s %d article%s\n", $category, $kept, $kept === 1 ? '' : 's'));
 }
 
 if ($byCategory === []) {
-    exit("\nNothing was collected. Check your internet connection and try again.\n");
+    // Nothing was written, so whatever the page showed before it still shows.
+    if (!$viaCli) {
+        http_response_code(502);
+    }
+
+    exit("\nNothing was collected, so the Radar table is untouched. dev.to could not be reached.\n");
 }
 
 // Best received first within each topic...
@@ -197,7 +284,9 @@ for ($round = 0; count($collected) < TARGET_TOTAL; $round++) {
 $db = Database::connection();
 
 // The table is a curated snapshot, so a re-run replaces it rather than piling
-// new articles on top of an older selection.
+// new articles on top of an older selection. Both steps share one transaction,
+// so a run cut short by a timeout leaves the previous selection in place
+// instead of emptying the page.
 $db->beginTransaction();
 $db->exec('DELETE FROM radar_posts');
 
@@ -222,4 +311,4 @@ foreach ($collected as $row) {
 
 $db->commit();
 
-printf("\nStored %d articles. Open /Blog/radar to see them.\n", count($collected));
+report(sprintf("\nStored %d articles. Open the Radar page to see them.\n", count($collected)));

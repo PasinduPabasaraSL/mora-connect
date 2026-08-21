@@ -10,7 +10,6 @@ use App\Models\User;
  * @var array{articles: int, writers: int, topics: int} $stats
  */
 
-// The newest article is featured; the rest fill the grid below it.
 $lead = $posts[0] ?? null;
 $rest = array_slice($posts, 1);
 ?>

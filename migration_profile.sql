@@ -36,5 +36,7 @@ ALTER TABLE users
     -- 'upload', 'google' or 'initials' — which of the above to actually show
     ADD COLUMN IF NOT EXISTS avatar_source VARCHAR(12) NOT NULL DEFAULT 'initials' AFTER google_avatar;
 
--- Author pages are looked up by username on every visit.
-ALTER TABLE users ADD INDEX IF NOT EXISTS users_username_lookup (username);
+-- Author pages are looked up by username on every visit, but username is
+-- already UNIQUE and a unique index serves those lookups, so no index is needed
+-- here. An earlier version of this file added one; this drops it again.
+ALTER TABLE users DROP INDEX IF EXISTS users_username_lookup;

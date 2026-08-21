@@ -70,7 +70,7 @@ use App\Models\Post;
 
 <?php if ($posts === []): ?>
     <?php View::partial('partials/_empty', [
-        'message'    => 'Nothing has been collected yet. Run "php import_radar.php" from the project folder to fill this page.',
+        'message'    => 'Nothing has been collected yet. Check back shortly.',
         'actionUrl'  => url(),
         'actionText' => 'Back to the homepage',
     ]); ?>

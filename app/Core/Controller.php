@@ -10,9 +10,14 @@ abstract class Controller
     {
     }
 
-    protected function view(string $template, array $data = []): void
+    /**
+     * The layout is an argument so a section of the site can have its own shell.
+     * The admin panel uses this: it shares the design tokens but none of the
+     * public header, footer or navigation.
+     */
+    protected function view(string $template, array $data = [], string $layout = 'main'): void
     {
-        View::render($template, $data);
+        View::render($template, $data, $layout);
     }
 
     /**

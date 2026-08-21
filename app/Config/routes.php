@@ -22,6 +22,15 @@ return static function (Router $router): void {
     $router->get('/google-callback.php', 'AuthController@googleCallback');
     $router->get('/auth/google/callback', 'AuthController@googleCallback');
 
+    // Admin panel. /admin serves the sign-in form and the dashboard from the
+    $router->get('/admin', 'AdminController@index');
+    $router->post('/admin/login', 'AdminController@login');
+    $router->post('/admin/logout', 'AdminController@logout');
+    $router->get('/admin/content', 'AdminController@content');
+    $router->get('/admin/writers', 'AdminController@writers');
+    $router->get('/admin/radar', 'AdminController@radar');
+    $router->get('/admin/community', 'AdminController@community');
+
     $router->get('/profile', 'ProfileController@index');
 
     $router->get('/settings', 'SettingsController@edit');

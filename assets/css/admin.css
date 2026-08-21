@@ -1,0 +1,646 @@
+/* =========================================================
+   MoraConnect — admin panel
+
+   Loaded after style.css, which supplies every token, button,
+   badge and form control used here. This file only adds the
+   shell the public site does not have: a fixed left sidebar,
+   a sticky top bar, and the cards, tables and charts inside.
+
+   1  Shell & sidebar        4  Tables & lists
+   2  Top bar                5  Bars & charts
+   3  Cards & tiles          6  Sign-in & responsive
+   ========================================================= */
+
+/* ---------- 1. Shell & sidebar ---------- */
+.admin-body {
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+/* The panel owns the viewport and scrolls its content column, so the sidebar
+   and the top bar stay put. The sign-in screen is excluded: it is a short page
+   that should scroll normally if the window is tiny. */
+.admin-body:not(.admin-plain) {
+  overflow: hidden;
+}
+
+.admin-shell {
+  --side: 252px;
+
+  display: grid;
+  grid-template-columns: var(--side) minmax(0, 1fr);
+  height: 100vh;
+  /* Mobile browsers shrink the visible area when their toolbars appear; dvh
+     tracks that, vh does not. Declared second so it simply wins where known. */
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Drives the slide-over on narrow screens; never rendered */
+.admin-nav-state { display: none; }
+
+.admin-side {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  padding: var(--s3) var(--s2);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  /* Only if the nav itself outgrows a short window; normally there is nothing
+     to scroll here. */
+  overflow-y: auto;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.admin-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.admin-brand-text strong {
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.admin-brand-text em {
+  font-style: normal;
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.admin-nav-link:hover {
+  background: var(--surface-alt);
+  color: var(--ink);
+}
+
+/* The accent bar carries the state, so it survives a theme change and does not
+   rely on colour alone to say which section you are in. */
+.admin-nav-link.is-active {
+  background: var(--accent-tint);
+  color: var(--accent-text);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.admin-side-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding-top: var(--s2);
+  border-top: 1px solid var(--border);
+}
+
+.admin-who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  font-size: var(--fs-micro);
+  font-family: var(--font-mono);
+  color: var(--ink-faint);
+}
+
+.admin-who-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  flex: none;
+}
+
+/* Only ever visible while the slide-over is open */
+.admin-scrim { display: none; }
+
+/* The one scrolling region. min-height:0 is what lets a grid child shrink below
+   its content and hand the overflow here instead of to the page. */
+.admin-main {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- 2. Top bar ---------- */
+/* Sticky against .admin-main rather than the page, so it stays pinned as the
+   content scrolls under it. flex:none stops a tall page from squeezing it. */
+.admin-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-top-title { margin-right: auto; }
+
+.admin-top-title h1 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.admin-top-title p {
+  margin: 2px 0 0;
+  font-size: var(--fs-micro);
+  color: var(--ink-faint);
+}
+
+.admin-burger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.admin-burger span {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+.admin-content {
+  padding: var(--s3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+/* ---------- 3. Cards & tiles ---------- */
+.admin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s3);
+  min-width: 0;
+}
+
+.admin-card-head {
+  margin-bottom: var(--s3);
+}
+
+.admin-card-head h2 {
+  margin: 0;
+  font-size: var(--fs-h3);
+  font-weight: 650;
+}
+
+.admin-card-head p {
+  margin: 4px 0 0;
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+}
+
+.admin-grid {
+  display: grid;
+  gap: var(--s3);
+}
+
+.admin-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* Activity beside a narrower column, rather than two equal halves */
+.admin-grid-wide { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+
+.admin-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  gap: var(--s2);
+}
+
+.admin-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s2) var(--s2) 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-xs);
+}
+
+.admin-tile-value {
+  font-size: 27px;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.admin-tile-label {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.admin-tile-note {
+  font-size: var(--fs-micro);
+  color: var(--ink-faint);
+}
+
+/* Reserved for a figure that wants looking at, never for an error */
+.admin-tile.tone-warn {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.admin-tile.tone-warn .admin-tile-value { color: var(--accent-text); }
+
+.admin-callout {
+  padding: 14px var(--s2);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: var(--accent-tint);
+  font-size: var(--fs-small);
+  color: var(--ink);
+}
+
+.admin-callout code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.admin-note {
+  margin-top: var(--s2);
+  padding-top: var(--s2);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+}
+
+.admin-muted {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+}
+
+.admin-tight { margin-top: var(--s2); }
+
+/* ---------- 4. Tables & lists ---------- */
+/* Tables are the one thing here that cannot shrink indefinitely, so they scroll
+   inside their card rather than stretching the whole layout. */
+.admin-table-wrap {
+  overflow-x: auto;
+  margin: 0 calc(var(--s3) * -1) calc(var(--s3) * -1);
+  padding: 0 var(--s3) var(--s3);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 11px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.admin-table th {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-bottom-color: var(--border-firm);
+}
+
+.admin-table tbody tr:last-child td { border-bottom: none; }
+.admin-table tbody tr:hover { background: var(--surface-alt); }
+
+.admin-table td.numeric,
+.admin-table th.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A row with nothing in it stays legible but recedes */
+.admin-table tr.is-empty td { color: var(--ink-faint); }
+
+.admin-table a { color: inherit; text-decoration: none; }
+.admin-table a:hover { color: var(--accent-text); }
+
+.admin-strong {
+  display: block;
+  font-weight: 600;
+  color: var(--ink);
+  max-width: 34ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-sub {
+  display: block;
+  font-size: var(--fs-micro);
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
+.admin-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.admin-pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pill-live     { background: var(--success-tint); color: var(--success); }
+.pill-draft    { background: var(--surface-alt);  color: var(--ink-soft); }
+.pill-unlisted { background: var(--accent-tint);  color: var(--accent-text); }
+
+.admin-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--dot-bg, var(--ink-faint));
+}
+
+.admin-people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-people li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-people li:last-child { border-bottom: none; }
+.admin-people li > div { min-width: 0; flex: 1; }
+.admin-people a { text-decoration: none; }
+.admin-people a:hover { color: var(--accent-text); }
+
+.admin-when {
+  font-size: var(--fs-micro);
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.admin-spec {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--fs-small);
+}
+
+.admin-spec li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s2);
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-spec li:last-child { border-bottom: none; }
+.admin-spec li > span:first-child { color: var(--ink-soft); }
+.admin-spec li > span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---------- 5. Bars & charts ---------- */
+.admin-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.admin-bar-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s2);
+  margin-bottom: 5px;
+  font-size: var(--fs-small);
+}
+
+.admin-bar-label {
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-bar-value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-bar-value em {
+  font-style: normal;
+  font-weight: 400;
+  font-size: var(--fs-micro);
+  color: var(--ink-faint);
+}
+
+.admin-bar-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  overflow: hidden;
+}
+
+.admin-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+}
+
+.admin-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.admin-chart-base {
+  stroke: var(--border-firm);
+  stroke-width: 1;
+}
+
+.admin-chart-bar {
+  fill: var(--accent);
+}
+
+.admin-chart-value {
+  fill: var(--ink-soft);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-chart-month {
+  fill: var(--ink-faint);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.admin-chart-empty {
+  margin: 0;
+  padding: var(--s4) 0;
+  text-align: center;
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+}
+
+/* ---------- 6. Sign-in & responsive ---------- */
+.admin-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--s3);
+}
+
+.admin-login {
+  width: 100%;
+  max-width: 392px;
+  box-shadow: var(--shadow-lg);
+}
+
+.admin-login-head {
+  text-align: center;
+  margin-bottom: var(--s3);
+}
+
+.admin-login-head .brand-mark {
+  margin-bottom: var(--s2);
+}
+
+.admin-login-head h1 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 650;
+}
+
+.admin-login-head p {
+  margin: 6px 0 0;
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+}
+
+.admin-lockout {
+  margin: 0 0 var(--s2);
+  padding: 11px 13px;
+  border-radius: var(--radius-sm);
+  background: var(--danger-tint);
+  color: var(--danger);
+  font-size: var(--fs-small);
+}
+
+.admin-login-foot {
+  margin: var(--s2) 0 0;
+  text-align: center;
+  font-size: var(--fs-small);
+}
+
+@media (max-width: 1100px) {
+  .admin-grid-wide { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .admin-shell { grid-template-columns: minmax(0, 1fr); }
+
+  /* The sidebar becomes a slide-over, driven by the checkbox alone so the panel
+     still navigates with JavaScript switched off. */
+  .admin-side {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    width: 262px;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .admin-nav-state:checked ~ .admin-side { transform: translateX(0); }
+
+  .admin-nav-state:checked ~ .admin-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .admin-burger { display: flex; }
+
+  .admin-content { padding: var(--s2); }
+}
+
+@media (max-width: 700px) {
+  .admin-grid-2 { grid-template-columns: minmax(0, 1fr); }
+
+  .admin-top { padding: 14px var(--s2); }
+  .admin-top-title h1 { font-size: 18px; }
+  .admin-tile-value { font-size: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-side { transition: none; }
+}

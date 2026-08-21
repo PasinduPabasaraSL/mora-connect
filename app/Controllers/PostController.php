@@ -342,7 +342,6 @@ final class PostController extends Controller
             'tags'             => '',
             'status'           => Post::STATUS_DRAFT,
             'visibility'       => Post::VISIBILITY_PUBLIC,
-            'comments_enabled' => 1,
             'image_url'        => '',
             'word_count'       => 0,
             'reading_minutes'  => 0,
@@ -369,7 +368,6 @@ final class PostController extends Controller
             'visibility'       => $this->request->input('visibility') === Post::VISIBILITY_UNLISTED
                 ? Post::VISIBILITY_UNLISTED
                 : Post::VISIBILITY_PUBLIC,
-            'comments_enabled' => $this->request->input('comments_enabled') === '0' ? 0 : 1,
         ];
     }
 
@@ -404,7 +402,6 @@ final class PostController extends Controller
             ),
             'tags'             => $this->nullIfEmpty((string) $input['tags']),
             'visibility'       => $input['visibility'],
-            'comments_enabled' => $input['comments_enabled'],
             'word_count'       => $words,
             'reading_minutes'  => Html::readingMinutes($words),
             'image_url'        => $this->imageOrNull((string) $input['image_url']),

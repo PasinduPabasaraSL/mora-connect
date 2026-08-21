@@ -20,8 +20,28 @@ return [
     'google' => [
         'client_id'     => Env::get('GOOGLE_CLIENT_ID'),
         'client_secret' => Env::get('GOOGLE_CLIENT_SECRET'),
-        // Must match an Authorised redirect URI in the Google Cloud console
         'redirect_uri'  => Env::get('GOOGLE_REDIRECT_URI', 'http://localhost/Blog/google-callback.php'),
+    ],
+
+    /**
+     * The admin panel's sign-in, which is deliberately not a row in `users`.
+     *
+     * The panel reads across every table, so its credentials are deployment
+     * configuration rather than an account. Keeping it out of the table means it
+     * needs no email address, never counts towards writer or community figures,
+     * and cannot be handed out by editing somebody's profile.
+     *
+     * Only the hash is stored, never the password. Generate one with:
+     *   php -r 'echo password_hash("your password", PASSWORD_DEFAULT), "\n";'
+     */
+    'admin' => [
+        'username'      => Env::get('ADMIN_USERNAME'),
+        'password_hash' => Env::get('ADMIN_PASSWORD_HASH'),
+    ],
+
+    'radar' => [
+        'import_key'  => Env::get('RADAR_IMPORT_KEY'),
+        'import_user' => Env::get('RADAR_IMPORT_USER'),
     ],
 
     'topic_groups' => [
